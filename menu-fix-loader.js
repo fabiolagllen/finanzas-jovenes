@@ -1,6 +1,10 @@
-/* Carga la corrección del menú de juegos */
+/* Carga mejoras del sitio */
 (function(){
-  const s=document.createElement('script');
-  s.src='fix-games-menu.js';
-  document.body.appendChild(s);
+  const games=document.createElement('script');
+  games.src='fix-games-menu.js';
+  document.body.appendChild(games);
+
+  const pwa=document.createElement('script');
+  pwa.src='pwa.js';
+  document.body.appendChild(pwa);
 })();
