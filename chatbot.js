@@ -21,7 +21,6 @@
     {keys:['herramientas','que puedo hacer','funciones','funcionalidades'],answer:'🛠️ En Finanzas Jóvenes encontrarás calculadora de presupuesto, calculadora de metas, registro de gastos, consejos, mini quiz, reto de 7 días y Mi panel.'},
     {keys:['cuenta','iniciar sesion','iniciar sesión','registrarme','crear cuenta','login'],answer:'👤 Puedes crear una cuenta o iniciar sesión desde el menú. La cuenta permite guardar información financiera y consultar tu progreso en Mi panel.'},
     {keys:['que es finanzas jovenes','qué es finanzas jóvenes','finanzas jovenes','finanzas jóvenes','pagina','página','plataforma'],answer:'💚 Finanzas Jóvenes es una plataforma para jóvenes que quieren aprender a manejar mejor su dinero. Combina educación financiera, herramientas, metas, registro de gastos y actividades interactivas.'},
-
     {keys:['que es ahorrar','qué es ahorrar','ahorro','importancia ahorrar','porque ahorrar','por que ahorrar'],answer:'💰 Ahorrar significa reservar una parte del dinero disponible para utilizarla después. Puede ayudarte a alcanzar metas, prepararte para gastos futuros y tener mayor control sobre tu dinero.'},
     {keys:['como ahorrar','cómo ahorrar','formas de ahorrar','tips para ahorrar','consejos para ahorrar'],answer:'💡 Para ahorrar puedes definir una meta, registrar tus gastos, diferenciar necesidades de deseos, establecer una cantidad periódica y revisar tu presupuesto. Lo importante es que la cantidad sea realista para tu situación.'},
     {keys:['ahorro emergencia','fondo emergencia','emergencias','imprevisto','imprevistos'],answer:'🛟 Un fondo para emergencias es dinero reservado para situaciones inesperadas, como una reparación o un gasto necesario. La cantidad y el objetivo pueden variar según cada persona.'},
@@ -43,39 +42,25 @@
     {keys:['cuanto debo ahorrar','cuánto debo ahorrar','porcentaje ahorrar'],answer:'💰 No existe una cantidad única que funcione para todos. Depende de tus ingresos, gastos y metas. Lo mejor es establecer una cantidad realista que puedas mantener y revisarla con tu presupuesto.'}
   ];
 
-  const normalize = text => String(text || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9ñ\s]/g,' ')
-    .replace(/\s+/g,' ')
-    .trim();
+  const normalize = text => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ\s]/g,' ').replace(/\s+/g,' ').trim();
 
   function findAnswer(question){
     const q=normalize(question);
     if(!q) return 'Escribe una pregunta y te ayudaré con Finanzas Jóvenes. 💚';
-
     const greetings=['hola','holi','buenas','hey','buenos dias','buenas tardes','buenas noches'];
     if(greetings.some(x=>q===x || q.startsWith(x+' '))) return '¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedo ayudarte con la plataforma y con educación financiera básica: ahorro, presupuesto, gastos, deudas, crédito, metas y más.';
-
-    let best=null;
-    let bestScore=0;
+    let best=null,bestScore=0;
     for(const item of KNOWLEDGE){
       let score=0;
-      for(const key of item.keys){
-        const k=normalize(key);
-        if(q.includes(k)) score += k.length >= 8 ? 3 : 2;
-      }
+      for(const key of item.keys){const k=normalize(key);if(q.includes(k)) score += k.length >= 8 ? 3 : 2;}
       if(score>bestScore){bestScore=score;best=item;}
     }
     if(best && bestScore>=2) return best.answer;
-
     return '🤖 Esa pregunta todavía no está en mi base de conocimiento. Soy FJ, un asistente propio de Finanzas Jóvenes. Puedo ayudarte con ahorro, presupuesto, gastos, metas, ingresos, deudas, crédito, intereses, inflación, seguridad financiera y otros temas de educación financiera básica. 💚';
   }
 
   function inject(){
     if(document.getElementById('fjChatbot')) return;
-
     const style=document.createElement('style');
     style.textContent=`
       #fjChatbot{position:fixed;right:22px;bottom:22px;z-index:9999;font-family:Arial,sans-serif}
@@ -90,9 +75,6 @@
       .fj-msg{max-width:86%;padding:10px 12px;border-radius:14px;font-size:.88rem;line-height:1.45;white-space:pre-wrap}
       .fj-msg.bot{align-self:flex-start;background:#0e2116;border:1px solid #28553a;color:#caffd8;border-bottom-left-radius:5px}
       .fj-msg.user{align-self:flex-end;background:#39ff88;color:#041008;border-bottom-right-radius:5px;font-weight:700}
-      .fj-quick{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px}
-      .fj-quick button{white-space:nowrap;border:1px solid #294034;background:#0a130d;color:#aaffc5;border-radius:999px;padding:7px 10px;cursor:pointer;font-size:.72rem}
-      .fj-quick button:hover{border-color:#39ff88}
       .fj-chat-form{display:flex;gap:7px;padding:11px;border-top:1px solid #294034;background:#09110c}
       #fjChatInput{min-width:0;flex:1;padding:10px 11px;border:1px solid #294034;border-radius:12px;background:#050b07;color:#f4faf6;outline:none}
       #fjChatInput:focus{border-color:#39ff88}
@@ -100,62 +82,23 @@
       @media(max-width:600px){#fjChatbot{right:14px;bottom:14px}#fjChatPanel{right:-4px;bottom:72px;width:min(360px,calc(100vw - 28px));height:70vh;max-height:520px}}
     `;
     document.head.appendChild(style);
-
-    const root=document.createElement('div');
-    root.id='fjChatbot';
+    const root=document.createElement('div');root.id='fjChatbot';
     root.innerHTML=`
       <div id="fjChatPanel" aria-label="Chat de Finanzas Jóvenes">
-        <div class="fj-chat-head">
-          <div><div class="fj-chat-title">🤖 <span>FJ</span> · Asistente</div><div class="fj-chat-sub">Educación financiera y Finanzas Jóvenes</div></div>
-          <button class="fj-chat-close" id="fjChatClose" aria-label="Cerrar">×</button>
-        </div>
+        <div class="fj-chat-head"><div><div class="fj-chat-title">🤖 <span>FJ</span> · Asistente</div><div class="fj-chat-sub">Finanzas Jóvenes · Educación financiera</div></div><button class="fj-chat-close" id="fjChatClose" aria-label="Cerrar">×</button></div>
         <div id="fjChatMessages"></div>
-        <div class="fj-quick">
-          <button data-q="¿Cómo puedo ahorrar?">💰 Ahorrar</button>
-          <button data-q="¿Para qué sirve un presupuesto?">📊 Presupuesto</button>
-          <button data-q="¿Qué es una deuda?">💳 Deudas</button>
-          <button data-q="¿Cómo hago una meta para una moto?">🏍️ Meta</button>
-        </div>
-        <form class="fj-chat-form" id="fjChatForm">
-          <input id="fjChatInput" maxlength="300" autocomplete="off" placeholder="Pregunta sobre dinero o finanzas...">
-          <button id="fjChatSend" type="submit">➤</button>
-        </form>
+        <form class="fj-chat-form" id="fjChatForm"><input id="fjChatInput" maxlength="300" autocomplete="off" placeholder="Escribe tu pregunta..."><button id="fjChatSend" type="submit">➤</button></form>
       </div>
       <button id="fjChatButton" aria-label="Abrir asistente">🤖</button>
     `;
     document.body.appendChild(root);
-
-    const panel=document.getElementById('fjChatPanel');
-    const messages=document.getElementById('fjChatMessages');
-    const input=document.getElementById('fjChatInput');
-
-    function addMessage(text,type){
-      const el=document.createElement('div');
-      el.className='fj-msg '+type;
-      el.textContent=text;
-      messages.appendChild(el);
-      messages.scrollTop=messages.scrollHeight;
-    }
-
-    function ask(text){
-      const q=String(text||'').trim();
-      if(!q)return;
-      addMessage(q,'user');
-      input.value='';
-      setTimeout(()=>addMessage(findAnswer(q),'bot'),180);
-    }
-
-    document.getElementById('fjChatButton').onclick=()=>{
-      panel.classList.toggle('show');
-      if(panel.classList.contains('show')) input.focus();
-    };
+    const panel=document.getElementById('fjChatPanel'),messages=document.getElementById('fjChatMessages'),input=document.getElementById('fjChatInput');
+    function addMessage(text,type){const el=document.createElement('div');el.className='fj-msg '+type;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;}
+    function ask(text){const q=String(text||'').trim();if(!q)return;addMessage(q,'user');input.value='';setTimeout(()=>addMessage(findAnswer(q),'bot'),180);}
+    document.getElementById('fjChatButton').onclick=()=>{panel.classList.toggle('show');if(panel.classList.contains('show'))input.focus();};
     document.getElementById('fjChatClose').onclick=()=>panel.classList.remove('show');
     document.getElementById('fjChatForm').onsubmit=e=>{e.preventDefault();ask(input.value)};
-    root.querySelectorAll('.fj-quick button').forEach(btn=>btn.onclick=()=>ask(btn.dataset.q));
-
-    addMessage('¡Hola! 👋 Soy FJ. Puedo ayudarte con Finanzas Jóvenes y con educación financiera básica: ahorro, presupuesto, gastos, metas, deudas, crédito y más. ¿Qué quieres saber?','bot');
+    addMessage('¡Hola! 👋 Soy FJ. Puedo ayudarte con Finanzas Jóvenes y educación financiera básica. Escribe tu pregunta y te responderé.','bot');
   }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject);
-  else inject();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject); else inject();
 })();
