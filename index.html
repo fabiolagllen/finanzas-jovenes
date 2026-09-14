@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finanzas Jóvenes</title>
+  <style>
+    :root { --primary:#2563eb; --dark:#172033; --light:#f4f7fb; --text:#243047; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Arial, sans-serif; background:var(--light); color:var(--text); line-height:1.6; }
+    header { background:white; border-bottom:1px solid #e5e7eb; position:sticky; top:0; z-index:10; }
+    nav { max-width:1100px; margin:auto; padding:18px 24px; display:flex; justify-content:space-between; align-items:center; }
+    .logo { font-size:1.35rem; font-weight:800; color:var(--dark); }
+    .logo span { color:var(--primary); }
+    nav a { color:var(--text); text-decoration:none; margin-left:22px; font-size:.95rem; }
+    .hero { max-width:1100px; margin:0 auto; padding:80px 24px 70px; display:grid; grid-template-columns:1.2fr .8fr; gap:50px; align-items:center; }
+    .badge { display:inline-block; background:#dbeafe; color:#1d4ed8; padding:7px 12px; border-radius:999px; font-size:.85rem; font-weight:700; margin-bottom:18px; }
+    h1 { font-size:clamp(2.5rem,6vw,4.5rem); line-height:1.05; color:var(--dark); margin-bottom:20px; }
+    h1 span { color:var(--primary); }
+    .hero p { font-size:1.1rem; max-width:600px; color:#526078; margin-bottom:28px; }
+    .button { display:inline-block; background:var(--primary); color:white; text-decoration:none; padding:13px 21px; border-radius:10px; font-weight:700; }
+    .card-visual { background:white; border-radius:24px; padding:28px; box-shadow:0 15px 40px rgba(31,41,55,.08); }
+    .balance { font-size:2.2rem; font-weight:800; color:var(--dark); margin:8px 0 20px; }
+    .bar { height:12px; background:#e5e7eb; border-radius:20px; overflow:hidden; margin:10px 0 22px; }
+    .bar div { width:68%; height:100%; background:var(--primary); border-radius:20px; }
+    section { max-width:1100px; margin:auto; padding:65px 24px; }
+    .section-title { text-align:center; margin-bottom:35px; }
+    .section-title h2 { font-size:2rem; color:var(--dark); }
+    .section-title p { color:#667085; margin-top:8px; }
+    .features { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .feature { background:white; padding:28px; border-radius:18px; box-shadow:0 8px 25px rgba(31,41,55,.05); }
+    .icon { font-size:2rem; margin-bottom:12px; }
+    .feature h3 { color:var(--dark); margin-bottom:8px; }
+    .feature p { color:#667085; font-size:.95rem; }
+    .cta { background:var(--dark); color:white; border-radius:25px; text-align:center; padding:55px 25px; }
+    .cta h2 { font-size:2rem; margin-bottom:10px; }
+    .cta p { color:#cbd5e1; margin-bottom:25px; }
+    .cta .button { background:white; color:var(--dark); }
+    footer { text-align:center; padding:28px; color:#7b8494; font-size:.9rem; }
+    @media(max-width:750px){ .hero{grid-template-columns:1fr;padding-top:55px}.features{grid-template-columns:1fr} nav{flex-direction:column;gap:12px} nav a{margin:0 8px} }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="logo">Finanzas<span>Jóvenes</span></div>
+      <div><a href="#inicio">Inicio</a><a href="#aprende">Aprende</a><a href="#herramientas">Herramientas</a></div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div>
+        <span class="badge">Educación financiera para jóvenes</span>
+        <h1>Aprende a manejar tu <span>dinero</span>.</h1>
+        <p>Una plataforma pensada para jóvenes que quieren aprender sobre ahorro, presupuesto, gastos y decisiones financieras de una manera sencilla y práctica.</p>
+        <a class="button" href="#aprende">Comenzar a aprender</a>
+      </div>
+      <div class="card-visual">
+        <p>Mi meta de ahorro</p>
+        <div class="balance">Q 680 / Q 1,000</div>
+        <div class="bar"><div></div></div>
+        <p>💡 Consejo: define una meta y avanza poco a poco.</p>
+      </div>
+    </section>
+
+    <section id="aprende">
+      <div class="section-title">
+        <h2>¿Qué podrás aprender?</h2>
+        <p>Conceptos básicos para comenzar a tomar mejores decisiones con tu dinero.</p>
+      </div>
+      <div class="features">
+        <article class="feature"><div class="icon">💰</div><h3>Ahorro</h3><p>Aprende cómo establecer metas de ahorro y crear hábitos que puedas mantener.</p></article>
+        <article class="feature"><div class="icon">📊</div><h3>Presupuesto</h3><p>Organiza tus ingresos y gastos para saber hacia dónde va tu dinero.</p></article>
+        <article class="feature"><div class="icon">🎯</div><h3>Metas</h3><p>Convierte tus objetivos en planes claros y alcanzables paso a paso.</p></article>
+      </div>
+    </section>
+
+    <section id="herramientas">
+      <div class="cta">
+        <h2>Tu futuro financiero comienza hoy.</h2>
+        <p>Esta es solo la primera versión de Finanzas Jóvenes. Poco a poco agregaremos calculadoras, herramientas, consejos y mucho más.</p>
+        <a class="button" href="#inicio">Explorar plataforma</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2026 Finanzas Jóvenes · Proyecto en desarrollo</footer>
+</body>
+</html>
