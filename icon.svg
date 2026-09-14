@@ -1,1 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#050806"/><rect x="58" y="58" width="396" height="396" rx="92" fill="#0d2116" stroke="#39ff88" stroke-width="10"/><path d="M150 176h212a34 34 0 0 1 34 34v122a34 34 0 0 1-34 34H150a34 34 0 0 1-34-34V210a34 34 0 0 1 34-34Z" fill="#101912" stroke="#39ff88" stroke-width="12"/><circle cx="342" cy="271" r="42" fill="#39ff88"/><text x="342" y="286" text-anchor="middle" font-family="Arial,sans-serif" font-size="48" font-weight="900" fill="#041008">Q</text><path d="M160 148h192" stroke="#b5ff63" stroke-width="14" stroke-linecap="round"/><path d="M180 384h152" stroke="#39ff88" stroke-width="12" stroke-linecap="round"/><circle cx="128" cy="271" r="12" fill="#b5ff63"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#102a1b"/><stop offset="1" stop-color="#050806"/></linearGradient>
+  <linearGradient id="coin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b5ff63"/><stop offset="1" stop-color="#39ff88"/></linearGradient>
+</defs>
+<rect width="512" height="512" rx="116" fill="#050806"/>
+<rect x="28" y="28" width="456" height="456" rx="100" fill="url(#bg)" stroke="#39ff88" stroke-width="8"/>
+<circle cx="256" cy="256" r="142" fill="#0a160e" stroke="#294f36" stroke-width="10"/>
+<circle cx="256" cy="256" r="112" fill="url(#coin)"/>
+<circle cx="256" cy="256" r="91" fill="#07100b"/>
+<path d="M287 175c-12-9-27-14-43-14-43 0-77 39-77 95s34 95 77 95c16 0 31-5 43-14" fill="none" stroke="#39ff88" stroke-width="22" stroke-linecap="round"/>
+<path d="M179 230h95M179 282h82" stroke="#b5ff63" stroke-width="18" stroke-linecap="round"/>
+<text x="256" y="365" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="900" fill="#39ff88">FJ</text>
+<circle cx="397" cy="116" r="27" fill="#39ff88"/>
+<path d="M386 116h22M397 105v22" stroke="#041008" stroke-width="7" stroke-linecap="round"/>
+</svg>
