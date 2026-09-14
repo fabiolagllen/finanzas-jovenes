@@ -1,0 +1,23 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: '17 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Supabase activity
+        env:
+          SUPABASE_URL: https://pgfgmxeqisrwkrwtvbum.supabase.co
+          SUPABASE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -e
+          curl -fsS "$SUPABASE_URL/rest/v1/chatbot_knowledge?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Accept-Profile: public" \
+            -o /dev/null
+          echo "Supabase activity generated successfully."
