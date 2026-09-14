@@ -1,9 +1,14 @@
 /* FJ — Chatbot propio de Finanzas Jóvenes
    No usa OpenAI, Gemini ni otra IA externa.
    Responde sobre Finanzas Jóvenes y educación financiera básica.
+   Puede ampliar su base mediante respuestas aprobadas guardadas en Supabase.
 */
 (function(){
   'use strict';
+
+  const SUPABASE_URL='https://pgfgmxeqisrwkrwtvbum.supabase.co';
+  const SUPABASE_KEY='sb_publishable_6al9XSM0nTc6-RlkX2UUrw_SLaQdwEh';
+  let db=null;
 
   const KNOWLEDGE = [
     {keys:['meta','metas','objetivo','objetivos','ahorro','ahorrar'],answer:'🎯 Las metas de ahorro convierten algo que quieres lograr en un objetivo concreto. Define cuánto necesitas, cuánto tienes y en cuánto tiempo quieres alcanzarlo. Puedes usar la calculadora de metas de Finanzas Jóvenes para estimar cuánto ahorrar cada mes.'},
@@ -44,19 +49,45 @@
 
   const normalize = text => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ\s]/g,' ').replace(/\s+/g,' ').trim();
 
+  function addDynamicKnowledge(rows){
+    for(const row of rows || []){
+      if(!row || row.active===false || !row.answer) continue;
+      KNOWLEDGE.push({keys:Array.isArray(row.keywords)?row.keywords:[row.question],answer:row.answer});
+    }
+  }
+
+  async function initDatabase(){
+    try{
+      if(!window.supabase || typeof window.supabase.createClient!=='function') return;
+      db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      const {data,error}=await db.from('chatbot_knowledge').select('question,keywords,answer,active').eq('active',true).limit(200);
+      if(!error) addDynamicKnowledge(data);
+    }catch(e){ console.warn('FJ: no se pudo cargar la base de conocimiento.',e); }
+  }
+
+  async function saveUnknownQuestion(question){
+    if(!db) return;
+    try{
+      const normalized=normalize(question);
+      const {data}=await db.from('chatbot_questions').select('id').eq('normalized_question',normalized).eq('status','pendiente').limit(1);
+      if(data && data.length) return;
+      await db.from('chatbot_questions').insert({question:question.slice(0,500),normalized_question:normalized,category:'sin_respuesta',status:'pendiente'});
+    }catch(e){ console.warn('FJ: no se pudo guardar la pregunta.',e); }
+  }
+
   function findAnswer(question){
     const q=normalize(question);
-    if(!q) return 'Escribe una pregunta y te ayudaré con Finanzas Jóvenes. 💚';
+    if(!q) return {answer:'Escribe una pregunta y te ayudaré con Finanzas Jóvenes. 💚',known:true};
     const greetings=['hola','holi','buenas','hey','buenos dias','buenas tardes','buenas noches'];
-    if(greetings.some(x=>q===x || q.startsWith(x+' '))) return '¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedo ayudarte con la plataforma y con educación financiera básica: ahorro, presupuesto, gastos, deudas, crédito, metas y más.';
+    if(greetings.some(x=>q===x || q.startsWith(x+' '))) return {answer:'¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedo ayudarte con la plataforma y con educación financiera básica: ahorro, presupuesto, gastos, deudas, crédito, metas y más.',known:true};
     let best=null,bestScore=0;
     for(const item of KNOWLEDGE){
       let score=0;
-      for(const key of item.keys){const k=normalize(key);if(q.includes(k)) score += k.length >= 8 ? 3 : 2;}
+      for(const key of item.keys){const k=normalize(key);if(k && q.includes(k)) score += k.length >= 8 ? 3 : 2;}
       if(score>bestScore){bestScore=score;best=item;}
     }
-    if(best && bestScore>=2) return best.answer;
-    return '🤖 Esa pregunta todavía no está en mi base de conocimiento. Soy FJ, un asistente propio de Finanzas Jóvenes. Puedo ayudarte con ahorro, presupuesto, gastos, metas, ingresos, deudas, crédito, intereses, inflación, seguridad financiera y otros temas de educación financiera básica. 💚';
+    if(best && bestScore>=2) return {answer:best.answer,known:true};
+    return {answer:'🤖 Esa pregunta todavía no está en mi base de conocimiento. Ya la puedo registrar para que sea revisada y, si corresponde, agregar una respuesta después. Por ahora puedo ayudarte con ahorro, presupuesto, gastos, metas, ingresos, deudas, crédito, intereses, inflación, seguridad financiera y otros temas de educación financiera básica. 💚',known:false};
   }
 
   function inject(){
@@ -94,11 +125,11 @@
     document.body.appendChild(root);
     const panel=document.getElementById('fjChatPanel'),messages=document.getElementById('fjChatMessages'),input=document.getElementById('fjChatInput');
     function addMessage(text,type){const el=document.createElement('div');el.className='fj-msg '+type;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;}
-    function ask(text){const q=String(text||'').trim();if(!q)return;addMessage(q,'user');input.value='';setTimeout(()=>addMessage(findAnswer(q),'bot'),180);}
+    async function ask(text){const q=String(text||'').trim();if(!q)return;addMessage(q,'user');input.value='';const result=findAnswer(q);setTimeout(()=>addMessage(result.answer,'bot'),180);if(!result.known) await saveUnknownQuestion(q);}
     document.getElementById('fjChatButton').onclick=()=>{panel.classList.toggle('show');if(panel.classList.contains('show'))input.focus();};
     document.getElementById('fjChatClose').onclick=()=>panel.classList.remove('show');
     document.getElementById('fjChatForm').onsubmit=e=>{e.preventDefault();ask(input.value)};
     addMessage('¡Hola! 👋 Soy FJ. Puedo ayudarte con Finanzas Jóvenes y educación financiera básica. Escribe tu pregunta y te responderé.','bot');
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject); else inject();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{initDatabase();inject();}); else {initDatabase();inject();}
 })();
