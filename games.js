@@ -31,7 +31,7 @@ section.innerHTML=`
 const panel=document.getElementById('panel');if(panel)panel.parentNode.insertBefore(section,panel);else document.querySelector('main')?.appendChild(section);
 
 const nav=document.querySelector('header nav > div:nth-child(2)');
-if(nav&&!nav.querySelector('a[href="#juegos"]')){const link=document.createElement('a');link.href='#juegos';link.textContent='🎮 Juegos';const retos=nav.querySelector('a[href="#interactivo"]');retos?nav.insertBefore(link,retos):nav.appendChild(link)}
+if(nav&&!nav.querySelector('a[href="#juegos"]')){const link=document.createElement('a');link.href='#fjGames';link.textContent='🎮 Juegos';const retos=nav.querySelector('a[href="#interactivo"]');retos?nav.insertBefore(link,retos):nav.appendChild(link)}
 const logo=document.querySelector('.logo');if(logo){logo.style.textAlign='center';logo.style.paddingLeft='7px';logo.style.paddingRight='7px';logo.style.fontSize='1.13rem';logo.style.whiteSpace='nowrap'}
 
 const levels=[{name:'🌱 Principiante',min:0,next:50},{name:'💵 Ahorrador',min:50,next:150},{name:'📊 Organizado',min:150,next:300},{name:'🏆 Experto financiero',min:300,next:null}];
