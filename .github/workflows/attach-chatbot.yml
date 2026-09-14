@@ -1,0 +1,35 @@
+name: Conectar chatbot FJ
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  attach-chatbot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Agregar chatbot a index.html
+        shell: bash
+        run: |
+          if ! grep -q 'chatbot.js' index.html; then
+            sed -i 's#</body>#<script src="chatbot.js"></script>\n</body>#' index.html
+          fi
+
+      - name: Guardar cambio
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "El chatbot ya estaba conectado."
+          else
+            git add index.html
+            git commit -m "Conectar chatbot FJ"
+            git push
+          fi
