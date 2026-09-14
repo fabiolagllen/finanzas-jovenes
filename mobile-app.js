@@ -1,4 +1,4 @@
-/* Finanzas Jóvenes — experiencia móvil tipo app */
+/* Finanzas Jóvenes — experiencia móvil tipo app + instalación PWA */
 (function(){
   'use strict';
 
@@ -8,6 +8,15 @@
     s.id='fjMobileStyles';
     s.textContent=`
       .fj-mobile-nav{display:none}
+      .fj-install-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(10px);z-index:9999}
+      .fj-install-card{width:min(430px,100%);background:linear-gradient(145deg,#102019,#07100b);border:1px solid rgba(57,255,136,.3);border-radius:28px;padding:30px 24px;text-align:center;box-shadow:0 30px 100px rgba(0,0,0,.75),0 0 45px rgba(57,255,136,.1)}
+      .fj-install-logo{width:76px;height:76px;margin:0 auto 16px;border-radius:22px;background:#0d2116;border:1px solid #39ff88;display:grid;place-items:center;font-size:2.2rem;box-shadow:0 0 28px rgba(57,255,136,.12)}
+      .fj-install-card h2{font-size:1.75rem;margin-bottom:8px}.fj-install-card h2 span{color:#39ff88}
+      .fj-install-card p{color:#9eafa5;font-size:.95rem;margin-bottom:22px}
+      .fj-install-actions{display:grid;gap:10px}.fj-install-actions button{width:100%;padding:14px 16px;border-radius:15px;font-weight:900;font-size:.95rem;cursor:pointer}
+      .fj-install-main{border:0;background:#39ff88;color:#041008}.fj-install-web{border:1px solid #355440;background:#132019;color:#39ff88}
+      .fj-install-help{display:none;margin-top:13px;padding:12px;border-radius:13px;background:#0b160f;border:1px solid #294034;color:#b8c9bf;font-size:.82rem;line-height:1.5;text-align:left}
+      .fj-install-help.show{display:block}.fj-install-help strong{color:#39ff88}
       @media(max-width:900px){
         body{padding-left:0!important;padding-bottom:86px!important}
         body:before{background-size:34px 34px}
@@ -48,66 +57,74 @@
     document.head.appendChild(s);
   }
 
-  function go(id){
-    const el=document.getElementById(id);if(!el)return;
-    el.scrollIntoView({behavior:'smooth',block:'start'});
-  }
+  function go(id){const el=document.getElementById(id);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'start'});}
 
   function setupNav(){
     if(document.querySelector('.fj-mobile-nav'))return;
-    const nav=document.createElement('nav');
-    nav.className='fj-mobile-nav';
-    nav.setAttribute('aria-label','Navegación móvil');
-    const items=[
-      ['inicio','🏠','Inicio'],
-      ['herramientas','💰','Finanzas'],
-      ['panel','🎯','Metas'],
-      ['fjGames','🎮','Juegos'],
-      ['perfil','👤','Perfil']
-    ];
-    items.forEach(([id,icon,label],i)=>{
-      const b=document.createElement('button');
-      b.type='button';b.dataset.target=id;
-      b.innerHTML='<span>'+icon+'</span>'+label;
-      b.addEventListener('click',()=>{
-        if(id==='perfil'){
-          if(typeof window.openAuth==='function') window.openAuth();
-          else go('panel');
-          return;
-        }
-        go(id);setActive(id);
-      });
-      nav.appendChild(b);
+    const nav=document.createElement('nav');nav.className='fj-mobile-nav';nav.setAttribute('aria-label','Navegación móvil');
+    const items=[['inicio','🏠','Inicio'],['herramientas','💰','Finanzas'],['panel','🎯','Metas'],['fjGames','🎮','Juegos'],['perfil','👤','Perfil']];
+    items.forEach(([id,icon,label])=>{
+      const b=document.createElement('button');b.type='button';b.dataset.target=id;b.innerHTML='<span>'+icon+'</span>'+label;
+      b.addEventListener('click',()=>{if(id==='perfil'){if(typeof window.openAuth==='function')window.openAuth();else go('panel');return;}go(id);setActive(id);});nav.appendChild(b);
     });
-    document.body.appendChild(nav);
-    setActive('inicio');
+    document.body.appendChild(nav);setActive('inicio');
   }
 
-  function setActive(id){
-    document.querySelectorAll('.fj-mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
-  }
+  function setActive(id){document.querySelectorAll('.fj-mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));}
 
   function observeSections(){
-    const ids=['inicio','herramientas','panel','fjGames'];
-    const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);
-    if(!('IntersectionObserver' in window))return;
-    const io=new IntersectionObserver(entries=>{
-      const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
-      if(visible)setActive(visible.target.id);
-    },{rootMargin:'-25% 0px -55% 0px',threshold:[.05,.2,.5]});
-    sections.forEach(s=>io.observe(s));
+    const ids=['inicio','herramientas','panel','fjGames'];const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver' in window))return;
+    const io=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setActive(visible.target.id);},{rootMargin:'-25% 0px -55% 0px',threshold:[.05,.2,.5]});sections.forEach(s=>io.observe(s));
+  }
+
+  function isStandalone(){return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
+
+  function setupInstallExperience(){
+    if(isStandalone()||localStorage.getItem('fjInstallChoice'))return;
+    let deferredPrompt=null;
+    const overlay=document.createElement('div');overlay.className='fj-install-overlay';overlay.id='fjInstallOverlay';overlay.innerHTML=`
+      <div class="fj-install-card">
+        <div class="fj-install-logo">💚</div>
+        <h2>Finanzas <span>Jóvenes</span></h2>
+        <p>Aprende a manejar tu dinero de forma fácil, practica con herramientas y lleva tus metas contigo.</p>
+        <div class="fj-install-actions">
+          <button class="fj-install-main" id="fjInstallChoiceButton">📲 Instalar aplicación</button>
+          <button class="fj-install-web" id="fjContinueWeb">🌐 Continuar en la página</button>
+        </div>
+        <div class="fj-install-help" id="fjInstallHelp"></div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const closeWeb=()=>{localStorage.setItem('fjInstallChoice','web');overlay.remove();};
+    document.getElementById('fjContinueWeb').addEventListener('click',closeWeb);
+
+    const installBtn=document.getElementById('fjInstallChoiceButton');
+    installBtn.addEventListener('click',async()=>{
+      if(deferredPrompt){
+        deferredPrompt.prompt();
+        try{await deferredPrompt.userChoice;}catch(e){}
+        deferredPrompt=null;
+        localStorage.setItem('fjInstallChoice','installed-choice');
+        overlay.remove();
+        return;
+      }
+      const help=document.getElementById('fjInstallHelp');
+      help.innerHTML='<strong>Instalación no disponible todavía.</strong><br>En Chrome/Edge, usa el botón de instalación de la barra de direcciones si aparece. En iPhone/iPad, abre Compartir y elige <strong>Añadir a pantalla de inicio</strong>.';
+      help.classList.add('show');
+    });
+
+    window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredPrompt=event;});
+    window.addEventListener('appinstalled',()=>{localStorage.setItem('fjInstallChoice','installed');overlay.remove();});
   }
 
   function setupPWA(){
-    if(!document.querySelector('link[rel="manifest"]')){
-      const link=document.createElement('link');link.rel='manifest';link.href='manifest.json';document.head.appendChild(link);
-    }
-    if(!document.querySelector('meta[name="theme-color"]')){
-      const meta=document.createElement('meta');meta.name='theme-color';meta.content='#050806';document.head.appendChild(meta);
-    }
-    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+    if(!document.querySelector('link[rel="manifest"]')){const link=document.createElement('link');link.rel='manifest';link.href='manifest.json';document.head.appendChild(link);}
+    if(!document.querySelector('meta[name="theme-color"]')){const meta=document.createElement('meta');meta.name='theme-color';meta.content='#39ff88';document.head.appendChild(meta);}
+    if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){const meta=document.createElement('meta');meta.name='apple-mobile-web-app-capable';meta.content='yes';document.head.appendChild(meta);}
+    if(!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')){const meta=document.createElement('meta');meta.name='apple-mobile-web-app-status-bar-style';meta.content='black-translucent';document.head.appendChild(meta);}
+    if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   }
 
-  function init(){addStyles();setupPWA();setupNav();setTimeout(observeSections,300)}
+  function init(){addStyles();setupPWA();setupNav();setTimeout(observeSections,300);setTimeout(setupInstallExperience,450);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
