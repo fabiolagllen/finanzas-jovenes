@@ -1,0 +1,44 @@
+name: Dejar solo dos juegos
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Quitar juegos no deseados y corregir menú
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('games.js')
+          s = p.read_text(encoding='utf-8')
+
+          unwanted_coins = '''<article class="fj-game"><div class="fj-game-icon">🪙</div><h3>Atrapa las monedas</h3><p class="fj-game-desc">Haz clic en monedas y billetes que aparecen por la pantalla. ¡Pero cuidado con los gastos!</p><span class="fj-game-tag">30 segundos · arcade</span><br><button class="fj-game-btn" onclick="fjCoinsStart()">▶ Jugar</button><div id="fjCoinsArea" class="fj-game-area"><div class="fj-arcade" id="fjCoinsBoard"><div class="fj-hud"><span id="fjCoinsScore">🪙 0</span><span id="fjCoinsTime">⏱️ 30</span></div></div></div></article>\n'''
+          unwanted_pig = '''<article class="fj-game"><div class="fj-game-icon">🐷</div><h3>Alimenta la alcancía</h3><p class="fj-game-desc">Atrapa monedas y billetes para llenar tu alcancía. Consigue combos para sumar más.</p><span class="fj-game-tag">20 segundos · combos</span><br><button class="fj-game-btn" onclick="fjPigStart()">▶ Jugar</button><div id="fjPigArea" class="fj-game-area"><div class="fj-pig" id="fjPigBoard"><div class="fj-pig-img" id="fjPig">🐷</div></div></div></article>\n'''
+
+          s = s.replace(unwanted_coins, '')
+          s = s.replace(unwanted_pig, '')
+          s = s.replace("if(nav&&!nav.querySelector('a[href=\"#juegos\"]'))", "if(nav&&!nav.querySelector('a[data-fj-games]'))")
+          s = s.replace("link.href='#fjGames';link.textContent='🎮 Juegos';", "link.href='#fjGames';link.dataset.fjGames='true';link.textContent='🎮 Juegos';")
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Guardar cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add games.js
+          if git diff --cached --quiet; then
+            echo "No hay cambios que guardar."
+          else
+            git commit -m "Dejar solo Carrito Loco y Memoria del Dinero"
+            git push
+          fi
