@@ -2,8 +2,6 @@ name: Load games into site
 
 on:
   push:
-    paths:
-      - 'games.js'
   workflow_dispatch:
 
 permissions:
