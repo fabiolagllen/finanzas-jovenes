@@ -12,7 +12,7 @@ jobs:
       - name: Generate Supabase activity
         env:
           SUPABASE_URL: https://pgfgmxeqisrwkrwtvbum.supabase.co
-          SUPABASE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_KEY: sb_publishable_6al9XSM0nTc6-RlkX2UUrw_SLaQdwEh
         run: |
           set -e
           curl -fsS "$SUPABASE_URL/rest/v1/chatbot_knowledge?select=id&limit=1" \
