@@ -30,10 +30,11 @@
         .hero p{font-size:.98rem!important}
         .hero-buttons{display:grid!important;grid-template-columns:1fr 1fr!important}
         .hero .button{padding:13px 10px!important;text-align:center!important}
-        .hero-visual{min-height:350px!important;margin-top:25px!important}
-        .float-card{font-size:.72rem!important;padding:9px 11px!important}
-        .float-card.one{right:-2px!important}.float-card.two{left:-2px!important}
-        .money-card{padding:21px!important;border-radius:23px!important;transform:none!important}
+        .hero-visual{min-height:355px!important;margin-top:25px!important;padding:48px 8px 45px!important}
+        .money-card{width:calc(100% - 28px)!important;max-width:390px!important;padding:21px!important;border-radius:23px!important;transform:none!important;z-index:2!important}
+        .hero-visual .float-card{font-size:.68rem!important;line-height:1.25!important;padding:8px 10px!important;border-radius:12px!important;animation:none!important;z-index:3!important;max-width:125px!important;white-space:normal!important}
+        .hero-visual .float-card.one{top:2px!important;right:0!important;left:auto!important}
+        .hero-visual .float-card.two{bottom:2px!important;left:0!important;right:auto!important}
         section{padding:48px 15px!important}
         .section-title{margin-bottom:24px!important}.section-title h2{font-size:1.75rem!important}
         .features,.tools,.interactive,.dashboard-grid,.dash-content{grid-template-columns:1fr!important;gap:12px!important}
@@ -52,7 +53,7 @@
         #fjGames+.dashboard{margin-top:0}
         #fjChatbot,#fjChatbotButton{bottom:88px!important}
       }
-      @media(max-width:380px){.fj-mobile-nav{left:6px;right:6px}.fj-mobile-nav button{font-size:.57rem}.fj-mobile-nav button span{font-size:1.08rem}}
+      @media(max-width:380px){.fj-mobile-nav{left:6px;right:6px}.fj-mobile-nav button{font-size:.57rem}.fj-mobile-nav button span{font-size:1.08rem}.hero-visual{min-height:340px!important}.hero-visual .float-card{max-width:112px!important;font-size:.63rem!important}}
     `;
     document.head.appendChild(s);
   }
@@ -94,25 +95,13 @@
         <div class="fj-install-help" id="fjInstallHelp"></div>
       </div>`;
     document.body.appendChild(overlay);
-
     const closeWeb=()=>{localStorage.setItem('fjInstallChoice','web');overlay.remove();};
     document.getElementById('fjContinueWeb').addEventListener('click',closeWeb);
-
     const installBtn=document.getElementById('fjInstallChoiceButton');
     installBtn.addEventListener('click',async()=>{
-      if(deferredPrompt){
-        deferredPrompt.prompt();
-        try{await deferredPrompt.userChoice;}catch(e){}
-        deferredPrompt=null;
-        localStorage.setItem('fjInstallChoice','installed-choice');
-        overlay.remove();
-        return;
-      }
-      const help=document.getElementById('fjInstallHelp');
-      help.innerHTML='<strong>Instalación no disponible todavía.</strong><br>En Chrome/Edge, usa el botón de instalación de la barra de direcciones si aparece. En iPhone/iPad, abre Compartir y elige <strong>Añadir a pantalla de inicio</strong>.';
-      help.classList.add('show');
+      if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;localStorage.setItem('fjInstallChoice','installed-choice');overlay.remove();return;}
+      const help=document.getElementById('fjInstallHelp');help.innerHTML='<strong>Instalación no disponible todavía.</strong><br>En Chrome/Edge, usa el botón de instalación de la barra de direcciones si aparece. En iPhone/iPad, abre Compartir y elige <strong>Añadir a pantalla de inicio</strong>.';help.classList.add('show');
     });
-
     window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredPrompt=event;});
     window.addEventListener('appinstalled',()=>{localStorage.setItem('fjInstallChoice','installed');overlay.remove();});
   }
