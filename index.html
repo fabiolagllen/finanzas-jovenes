@@ -68,6 +68,7 @@ async function updateSession(){if(!window.supabase||!supabaseClient)return;const
 function renderUser(session){const logged=!!session;document.getElementById('authButton').style.display=logged?'none':'inline-flex';document.getElementById('logoutButton').style.display=logged?'inline-flex':'none';const box=document.getElementById('userBox');if(logged){const name=session.user.user_metadata?.full_name||session.user.email;box.textContent='👋 Hola, '+name;box.style.display='block';document.getElementById('dashboardMessage').textContent='Tu panel se actualiza con tus movimientos financieros de este mes.'}else{box.style.display='none';document.getElementById('dashboardMessage').textContent='Inicia sesión para guardar y consultar tus datos financieros.'}}
 updateSession();
 </script>
+<script src="games.js"></script>
 <script src="chatbot.js"></script>
 </body>
 </html>
