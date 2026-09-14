@@ -1,7 +1,7 @@
 {
-  "name": "Finanzas Jóvenes",
-  "short_name": "Finanzas Jóvenes",
-  "description": "Aprende, organiza y practica tus finanzas de forma sencilla.",
+  "name": "FinanJoven — Finanzas Jóvenes",
+  "short_name": "FinanJoven",
+  "description": "Una plataforma juvenil para aprender, organizar y mejorar tus finanzas.",
   "lang": "es-GT",
   "start_url": "./",
   "scope": "./",
