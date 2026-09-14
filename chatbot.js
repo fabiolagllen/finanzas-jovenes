@@ -1,63 +1,46 @@
 /* FJ — Chatbot propio de Finanzas Jóvenes
    No usa OpenAI, Gemini ni otra IA externa.
-   Solo responde preguntas relacionadas con el contenido de la plataforma.
+   Responde sobre Finanzas Jóvenes y educación financiera básica.
 */
 (function(){
   'use strict';
 
   const KNOWLEDGE = [
-    {
-      keys:['meta','metas','objetivo','objetivos','ahorro','ahorrar'],
-      answer:'🎯 Las metas de ahorro de Finanzas Jóvenes sirven para convertir algo que quieres lograr en un objetivo concreto. Puedes indicar cuánto quieres alcanzar, cuánto llevas ahorrado y ver tu progreso. Por ejemplo: ahorrar para una laptop, un curso o algo que necesites.'
-    },
-    {
-      keys:['presupuesto','presupuestos','organizar dinero','organizar mis gastos'],
-      answer:'📊 El presupuesto te ayuda a organizar el dinero que recibes y compararlo con lo que gastas. En Finanzas Jóvenes puedes usar la calculadora de presupuesto para saber cuánto te queda después de tus gastos.'
-    },
-    {
-      keys:['calculadora','calcular presupuesto','calculadora presupuesto'],
-      answer:'🧮 La calculadora de presupuesto está en la sección Herramientas. Escribe tus ingresos mensuales y tus gastos para saber cuánto dinero te queda o si tus gastos superan tus ingresos.'
-    },
-    {
-      keys:['calculadora meta','calcular meta','cuanto ahorrar','ahorro mensual'],
-      answer:'🎯 La calculadora de meta de ahorro te ayuda a saber cuánto necesitas ahorrar cada mes. Indica la cantidad que quieres alcanzar, lo que ya tienes ahorrado y en cuántos meses quieres lograrlo.'
-    },
-    {
-      keys:['gasto','gastos','registrar gasto','registro de gastos','anotar gasto'],
-      answer:'🧾 En Registro de gastos puedes anotar lo que gastas y organizarlo por categoría. Si tienes una cuenta iniciada, tus gastos pueden guardarse para consultarlos en Mi panel.'
-    },
-    {
-      keys:['panel','mi panel','dashboard','resumen','progreso'],
-      answer:'📈 Mi panel financiero muestra un resumen de tus movimientos: gastos del mes, cantidad de gastos, promedio por gasto, estado financiero, distribución por categorías y tu meta de ahorro.'
-    },
-    {
-      keys:['reto','retos','7 dias','siete dias','desafio'],
-      answer:'🔥 El reto de 7 días propone pequeños hábitos financieros. Puedes marcar actividades como anotar tus gastos, evitar una compra impulsiva, guardar una cantidad, revisar tu presupuesto y definir una meta.'
-    },
-    {
-      keys:['quiz','mini quiz','preguntas','juego'],
-      answer:'🧠 El mini quiz financiero es una actividad de la Zona interactiva. Te hace preguntas sencillas sobre hábitos y conceptos financieros para que puedas comprobar lo que has aprendido.'
-    },
-    {
-      keys:['consejo','consejos','tip','consejo del dia','consejo diario'],
-      answer:'💡 El Consejo del día muestra recomendaciones sencillas para mejorar tus hábitos financieros. Puedes pulsar “Dame otro consejo” para recibir uno diferente.'
-    },
-    {
-      keys:['aprende','aprender','educacion financiera','finanzas'],
-      answer:'📚 La sección Aprende está pensada para que los jóvenes conozcan conceptos básicos de finanzas de una manera sencilla. Incluye ahorro inteligente, presupuesto y metas financieras.'
-    },
-    {
-      keys:['herramientas','que puedo hacer','funciones','funcionalidades'],
-      answer:'🛠️ En Herramientas encontrarás calculadora de presupuesto, calculadora de metas de ahorro, registro de gastos y Consejo del día. También tienes actividades interactivas como el mini quiz y el reto de 7 días.'
-    },
-    {
-      keys:['cuenta','iniciar sesion','iniciar sesión','registrarme','crear cuenta','login'],
-      answer:'👤 Puedes crear una cuenta o iniciar sesión desde el menú de Finanzas Jóvenes. La cuenta permite guardar tus datos financieros y consultar tu progreso en Mi panel.'
-    },
-    {
-      keys:['que es finanzas jovenes','qué es finanzas jóvenes','finanzas jovenes','finanzas jóvenes','pagina','página','plataforma'],
-      answer:'💚 Finanzas Jóvenes es una plataforma pensada para jóvenes que quieren aprender a manejar mejor su dinero. Incluye herramientas, metas, registro de gastos, consejos y actividades para practicar.'
-    }
+    {keys:['meta','metas','objetivo','objetivos','ahorro','ahorrar'],answer:'🎯 Las metas de ahorro convierten algo que quieres lograr en un objetivo concreto. Define cuánto necesitas, cuánto tienes y en cuánto tiempo quieres alcanzarlo. Puedes usar la calculadora de metas de Finanzas Jóvenes para estimar cuánto ahorrar cada mes.'},
+    {keys:['moto','motocicleta','comprar una moto','comprarme una moto','carro','auto','vehiculo','vehículo'],answer:'🏍️ Puedes convertir una moto, carro u otro vehículo en una meta de ahorro. Define el monto que necesitas, el tiempo disponible y cuánto puedes ahorrar periódicamente. Finanzas Jóvenes puede ayudarte a organizar ese objetivo, pero no recomienda una marca o modelo específico.'},
+    {keys:['laptop','computadora','telefono','teléfono','celular','curso','viaje'],answer:'🎯 Si quieres comprar una laptop, teléfono, pagar un curso, hacer un viaje u otra cosa, puedes convertirlo en una meta financiera. Define el costo, el plazo y una cantidad de ahorro periódica.'},
+    {keys:['presupuesto','presupuestos','organizar dinero','organizar mis gastos','planificar dinero'],answer:'📊 Un presupuesto es un plan para organizar el dinero que recibes y decidir cuánto puedes destinar a gastos, ahorro y metas. En Finanzas Jóvenes puedes usar la calculadora de presupuesto para practicarlo.'},
+    {keys:['calculadora','calcular presupuesto','calculadora presupuesto'],answer:'🧮 La calculadora de presupuesto está en Herramientas. Puedes ingresar tus ingresos y gastos para conocer cuánto dinero te queda y detectar si estás gastando más de lo que recibes.'},
+    {keys:['calculadora meta','calcular meta','cuanto ahorrar','cuánto ahorrar','ahorro mensual'],answer:'🎯 La calculadora de meta de ahorro te ayuda a estimar cuánto necesitas ahorrar cada mes. Indica la cantidad que quieres alcanzar, lo que ya tienes ahorrado y el tiempo que tienes para lograrlo.'},
+    {keys:['gasto','gastos','registrar gasto','registro de gastos','anotar gasto'],answer:'🧾 Registrar tus gastos te permite saber en qué estás utilizando tu dinero. Puedes clasificarlos por categoría y revisar después cuáles consumen más de tu presupuesto.'},
+    {keys:['panel','mi panel','dashboard','resumen','progreso'],answer:'📈 Mi panel financiero muestra un resumen de tus movimientos: gastos del mes, cantidad de gastos, promedio, estado financiero, categorías y progreso de tu meta de ahorro.'},
+    {keys:['reto','retos','7 dias','siete dias','desafio'],answer:'🔥 El reto de 7 días propone pequeños hábitos financieros, como registrar gastos, evitar compras impulsivas, ahorrar una cantidad, revisar el presupuesto y definir una meta.'},
+    {keys:['quiz','mini quiz','preguntas','juego'],answer:'🧠 El mini quiz financiero está en la Zona interactiva. Sirve para comprobar tus conocimientos sobre hábitos y conceptos financieros de forma sencilla.'},
+    {keys:['consejo','consejos','tip','consejo del dia','consejo diario'],answer:'💡 El Consejo del día muestra recomendaciones sencillas para mejorar tus hábitos financieros. Puedes pedir otro consejo para continuar aprendiendo.'},
+    {keys:['aprende','aprender','educacion financiera','educación financiera','finanzas'],answer:'📚 La sección Aprende está pensada para jóvenes que quieren conocer conceptos básicos de finanzas de forma sencilla, como ahorro, presupuesto y metas financieras.'},
+    {keys:['herramientas','que puedo hacer','funciones','funcionalidades'],answer:'🛠️ En Finanzas Jóvenes encontrarás calculadora de presupuesto, calculadora de metas, registro de gastos, consejos, mini quiz, reto de 7 días y Mi panel.'},
+    {keys:['cuenta','iniciar sesion','iniciar sesión','registrarme','crear cuenta','login'],answer:'👤 Puedes crear una cuenta o iniciar sesión desde el menú. La cuenta permite guardar información financiera y consultar tu progreso en Mi panel.'},
+    {keys:['que es finanzas jovenes','qué es finanzas jóvenes','finanzas jovenes','finanzas jóvenes','pagina','página','plataforma'],answer:'💚 Finanzas Jóvenes es una plataforma para jóvenes que quieren aprender a manejar mejor su dinero. Combina educación financiera, herramientas, metas, registro de gastos y actividades interactivas.'},
+
+    {keys:['que es ahorrar','qué es ahorrar','ahorro','importancia ahorrar','porque ahorrar','por que ahorrar'],answer:'💰 Ahorrar significa reservar una parte del dinero disponible para utilizarla después. Puede ayudarte a alcanzar metas, prepararte para gastos futuros y tener mayor control sobre tu dinero.'},
+    {keys:['como ahorrar','cómo ahorrar','formas de ahorrar','tips para ahorrar','consejos para ahorrar'],answer:'💡 Para ahorrar puedes definir una meta, registrar tus gastos, diferenciar necesidades de deseos, establecer una cantidad periódica y revisar tu presupuesto. Lo importante es que la cantidad sea realista para tu situación.'},
+    {keys:['ahorro emergencia','fondo emergencia','emergencias','imprevisto','imprevistos'],answer:'🛟 Un fondo para emergencias es dinero reservado para situaciones inesperadas, como una reparación o un gasto necesario. La cantidad y el objetivo pueden variar según cada persona.'},
+    {keys:['necesidad','necesidades','deseo','deseos','necesidades y deseos'],answer:'🧠 Una necesidad es algo importante para vivir o cumplir una obligación, mientras que un deseo es algo que quieres pero puede esperar. Distinguirlos ayuda a tomar mejores decisiones con el dinero.'},
+    {keys:['compra impulsiva','compras impulsivas','gastar de mas','gastar de más'],answer:'🛑 Una compra impulsiva ocurre cuando compras algo sin haberlo planificado. Puedes intentar esperar un tiempo, revisar tu presupuesto y preguntarte si realmente lo necesitas antes de gastar.'},
+    {keys:['ingreso','ingresos','ganar dinero','dinero que recibo','salario','sueldo'],answer:'💵 Un ingreso es dinero que recibes, por ejemplo por un trabajo, una actividad o una fuente permitida. Para organizar tus finanzas conviene conocer cuánto recibes y con qué frecuencia.'},
+    {keys:['deuda','deudas','endeudarse','prestamo','préstamo'],answer:'📌 Una deuda es una cantidad de dinero que debes pagar a otra persona o entidad. Antes de asumir una deuda conviene conocer cuánto tendrás que pagar, durante cuánto tiempo y si realmente puedes cumplir con los pagos.'},
+    {keys:['credito','crédito','tarjeta de credito','tarjeta de crédito'],answer:'💳 El crédito permite utilizar dinero prestado y devolverlo según condiciones establecidas. Es importante revisar intereses, comisiones, fechas de pago y el costo total antes de aceptar un crédito.'},
+    {keys:['interes','interés','intereses'],answer:'📈 El interés es una cantidad que puede cobrarse por utilizar dinero prestado o generarse sobre ciertos ahorros o inversiones. Su cálculo depende de las condiciones del producto financiero.'},
+    {keys:['inflacion','inflación','suben los precios','precios'],answer:'📊 La inflación es un aumento general de los precios con el tiempo. Cuando los precios suben, la misma cantidad de dinero puede comprar menos que antes.'},
+    {keys:['banco','bancos','cuenta bancaria','cuenta de ahorro'],answer:'🏦 Una cuenta bancaria puede servir para guardar dinero, recibir pagos y realizar operaciones. Antes de elegir una cuenta conviene revisar sus condiciones, costos y características.'},
+    {keys:['seguridad financiera','seguridad','estafa','estafas','fraude','fraudes','scam','estafado'],answer:'🔐 Para cuidar tu dinero, evita compartir contraseñas, códigos de seguridad o datos bancarios con personas desconocidas. Desconfía de promesas de dinero fácil y verifica siempre quién solicita información o pagos.'},
+    {keys:['inversion','inversión','invertir','inversiones'],answer:'📚 Invertir significa colocar dinero buscando obtener un rendimiento, pero siempre existe algún nivel de riesgo. Antes de invertir conviene aprender, entender el producto y no comprometer dinero que necesitas para gastos importantes. Finanzas Jóvenes ofrece educación general, no recomendaciones personalizadas de inversión.'},
+    {keys:['interes compuesto','interés compuesto'],answer:'🧮 El interés compuesto ocurre cuando los rendimientos obtenidos se suman al dinero inicial y posteriormente también pueden generar rendimientos. Por eso el tiempo puede ser importante en ciertos productos financieros.'},
+    {keys:['precio','costo','coste','comparar precios','comprar barato'],answer:'🛒 Antes de comprar puedes comparar precios, revisar si el producto realmente es necesario y considerar el impacto que tendrá en tu presupuesto y tus metas.'},
+    {keys:['plan financiero','planificar','planificacion','planificación','organizar mis finanzas'],answer:'🗓️ Un plan financiero básico puede incluir conocer tus ingresos, registrar gastos, establecer un presupuesto, crear metas de ahorro y revisar periódicamente tu progreso.'},
+    {keys:['dinero','manejar dinero','administrar dinero','administrar mi dinero','finanzas personales'],answer:'💚 Manejar bien el dinero consiste en conocer tus ingresos y gastos, organizar un presupuesto, ahorrar para objetivos y tomar decisiones de compra de forma consciente.'},
+    {keys:['como hacer presupuesto','cómo hacer presupuesto','hacer un presupuesto'],answer:'📊 Para hacer un presupuesto, primero anota tus ingresos. Después registra tus gastos, sepáralos por categorías y compara el total con lo que recibes. Finalmente decide cuánto puedes destinar al ahorro y a tus metas.'},
+    {keys:['cuanto debo ahorrar','cuánto debo ahorrar','porcentaje ahorrar'],answer:'💰 No existe una cantidad única que funcione para todos. Depende de tus ingresos, gastos y metas. Lo mejor es establecer una cantidad realista que puedas mantener y revisarla con tu presupuesto.'}
   ];
 
   const normalize = text => String(text || '')
@@ -73,7 +56,7 @@
     if(!q) return 'Escribe una pregunta y te ayudaré con Finanzas Jóvenes. 💚';
 
     const greetings=['hola','holi','buenas','hey','buenos dias','buenas tardes','buenas noches'];
-    if(greetings.some(x=>q===x || q.startsWith(x+' '))) return '¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedo explicarte las funciones y herramientas de esta plataforma. Por ejemplo, puedes preguntarme “¿para qué sirven las metas?”';
+    if(greetings.some(x=>q===x || q.startsWith(x+' '))) return '¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedo ayudarte con la plataforma y con educación financiera básica: ahorro, presupuesto, gastos, deudas, crédito, metas y más.';
 
     let best=null;
     let bestScore=0;
@@ -87,7 +70,7 @@
     }
     if(best && bestScore>=2) return best.answer;
 
-    return '🤖 Esa pregunta no está dentro de lo que conozco todavía. Soy el asistente de Finanzas Jóvenes y solo puedo ayudarte con las funciones, herramientas, actividades y conceptos relacionados con esta plataforma. Prueba preguntarme, por ejemplo: “¿para qué sirven las metas?”, “¿cómo funciona el reto de 7 días?” o “¿qué puedo hacer en Mi panel?”';
+    return '🤖 Esa pregunta todavía no está en mi base de conocimiento. Soy FJ, un asistente propio de Finanzas Jóvenes. Puedo ayudarte con ahorro, presupuesto, gastos, metas, ingresos, deudas, crédito, intereses, inflación, seguridad financiera y otros temas de educación financiera básica. 💚';
   }
 
   function inject(){
@@ -123,18 +106,18 @@
     root.innerHTML=`
       <div id="fjChatPanel" aria-label="Chat de Finanzas Jóvenes">
         <div class="fj-chat-head">
-          <div><div class="fj-chat-title">🤖 <span>FJ</span> · Asistente</div><div class="fj-chat-sub">Solo sobre Finanzas Jóvenes</div></div>
+          <div><div class="fj-chat-title">🤖 <span>FJ</span> · Asistente</div><div class="fj-chat-sub">Educación financiera y Finanzas Jóvenes</div></div>
           <button class="fj-chat-close" id="fjChatClose" aria-label="Cerrar">×</button>
         </div>
         <div id="fjChatMessages"></div>
         <div class="fj-quick">
-          <button data-q="¿Para qué sirven las metas de ahorro?">🎯 Metas</button>
-          <button data-q="¿Qué puedo hacer en Mi panel?">📊 Mi panel</button>
-          <button data-q="¿Cómo funciona el reto de 7 días?">🔥 Reto</button>
-          <button data-q="¿Para qué sirve el presupuesto?">💰 Presupuesto</button>
+          <button data-q="¿Cómo puedo ahorrar?">💰 Ahorrar</button>
+          <button data-q="¿Para qué sirve un presupuesto?">📊 Presupuesto</button>
+          <button data-q="¿Qué es una deuda?">💳 Deudas</button>
+          <button data-q="¿Cómo hago una meta para una moto?">🏍️ Meta</button>
         </div>
         <form class="fj-chat-form" id="fjChatForm">
-          <input id="fjChatInput" maxlength="300" autocomplete="off" placeholder="Pregunta sobre la página...">
+          <input id="fjChatInput" maxlength="300" autocomplete="off" placeholder="Pregunta sobre dinero o finanzas...">
           <button id="fjChatSend" type="submit">➤</button>
         </form>
       </div>
@@ -170,7 +153,7 @@
     document.getElementById('fjChatForm').onsubmit=e=>{e.preventDefault();ask(input.value)};
     root.querySelectorAll('.fj-quick button').forEach(btn=>btn.onclick=()=>ask(btn.dataset.q));
 
-    addMessage('¡Hola! 👋 Soy FJ. Puedo ayudarte a entender las funciones y herramientas de Finanzas Jóvenes. ¿Qué quieres saber?','bot');
+    addMessage('¡Hola! 👋 Soy FJ. Puedo ayudarte con Finanzas Jóvenes y con educación financiera básica: ahorro, presupuesto, gastos, metas, deudas, crédito y más. ¿Qué quieres saber?','bot');
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject);
