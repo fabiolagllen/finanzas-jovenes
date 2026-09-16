@@ -1,6 +1,5 @@
 /* FJ — Chatbot propio de Finanzas Jóvenes
-   No usa OpenAI, Gemini ni otra IA externa.
-   Responde sobre Finanzas Jóvenes y educación financiera básica.
+   Responde sobre la plataforma, educación financiera básica y situaciones cotidianas relacionadas con el dinero.
    Puede ampliar su base mediante respuestas aprobadas guardadas en Supabase.
 */
 (function(){
@@ -12,7 +11,7 @@
 
   const KNOWLEDGE = [
     {keys:['meta','metas','objetivo','objetivos','ahorro','ahorrar'],answer:'🎯 Las metas de ahorro convierten algo que quieres lograr en un objetivo concreto. Define cuánto necesitas, cuánto tienes y en cuánto tiempo quieres alcanzarlo. Puedes usar la calculadora de metas de Finanzas Jóvenes para estimar cuánto ahorrar cada mes.'},
-    {keys:['moto','motocicleta','comprar una moto','comprarme una moto','carro','auto','vehiculo','vehículo'],answer:'🏍️ Puedes convertir una moto, carro u otro vehículo en una meta de ahorro. Define el monto que necesitas, el tiempo disponible y cuánto puedes ahorrar periódicamente. Finanzas Jóvenes puede ayudarte a organizar ese objetivo, pero no recomienda una marca o modelo específico.'},
+    {keys:['moto','motocicleta','comprar una moto','comprarme una moto','carro','auto','vehiculo','vehículo'],answer:'🏍️ Puedes convertir una moto, carro u otro vehículo en una meta de ahorro. Define el monto que necesitas, el tiempo disponible y cuánto puedes ahorrar periódicamente.'},
     {keys:['laptop','computadora','telefono','teléfono','celular','curso','viaje'],answer:'🎯 Si quieres comprar una laptop, teléfono, pagar un curso, hacer un viaje u otra cosa, puedes convertirlo en una meta financiera. Define el costo, el plazo y una cantidad de ahorro periódica.'},
     {keys:['presupuesto','presupuestos','organizar dinero','organizar mis gastos','planificar dinero'],answer:'📊 Un presupuesto es un plan para organizar el dinero que recibes y decidir cuánto puedes destinar a gastos, ahorro y metas. En Finanzas Jóvenes puedes usar la calculadora de presupuesto para practicarlo.'},
     {keys:['calculadora','calcular presupuesto','calculadora presupuesto'],answer:'🧮 La calculadora de presupuesto está en Herramientas. Puedes ingresar tus ingresos y gastos para conocer cuánto dinero te queda y detectar si estás gastando más de lo que recibes.'},
@@ -38,13 +37,25 @@
     {keys:['inflacion','inflación','suben los precios','precios'],answer:'📊 La inflación es un aumento general de los precios con el tiempo. Cuando los precios suben, la misma cantidad de dinero puede comprar menos que antes.'},
     {keys:['banco','bancos','cuenta bancaria','cuenta de ahorro'],answer:'🏦 Una cuenta bancaria puede servir para guardar dinero, recibir pagos y realizar operaciones. Antes de elegir una cuenta conviene revisar sus condiciones, costos y características.'},
     {keys:['seguridad financiera','seguridad','estafa','estafas','fraude','fraudes','scam','estafado'],answer:'🔐 Para cuidar tu dinero, evita compartir contraseñas, códigos de seguridad o datos bancarios con personas desconocidas. Desconfía de promesas de dinero fácil y verifica siempre quién solicita información o pagos.'},
-    {keys:['inversion','inversión','invertir','inversiones'],answer:'📚 Invertir significa colocar dinero buscando obtener un rendimiento, pero siempre existe algún nivel de riesgo. Antes de invertir conviene aprender, entender el producto y no comprometer dinero que necesitas para gastos importantes. Finanzas Jóvenes ofrece educación general, no recomendaciones personalizadas de inversión.'},
+    {keys:['inversion','inversión','invertir','inversiones'],answer:'📚 Invertir significa colocar dinero buscando obtener un rendimiento, pero siempre existe algún nivel de riesgo. Antes de invertir conviene aprender, entender el producto y no comprometer dinero que necesitas para gastos importantes.'},
     {keys:['interes compuesto','interés compuesto'],answer:'🧮 El interés compuesto ocurre cuando los rendimientos obtenidos se suman al dinero inicial y posteriormente también pueden generar rendimientos. Por eso el tiempo puede ser importante en ciertos productos financieros.'},
     {keys:['precio','costo','coste','comparar precios','comprar barato'],answer:'🛒 Antes de comprar puedes comparar precios, revisar si el producto realmente es necesario y considerar el impacto que tendrá en tu presupuesto y tus metas.'},
     {keys:['plan financiero','planificar','planificacion','planificación','organizar mis finanzas'],answer:'🗓️ Un plan financiero básico puede incluir conocer tus ingresos, registrar gastos, establecer un presupuesto, crear metas de ahorro y revisar periódicamente tu progreso.'},
     {keys:['dinero','manejar dinero','administrar dinero','administrar mi dinero','finanzas personales'],answer:'💚 Manejar bien el dinero consiste en conocer tus ingresos y gastos, organizar un presupuesto, ahorrar para objetivos y tomar decisiones de compra de forma consciente.'},
     {keys:['como hacer presupuesto','cómo hacer presupuesto','hacer un presupuesto'],answer:'📊 Para hacer un presupuesto, primero anota tus ingresos. Después registra tus gastos, sepáralos por categorías y compara el total con lo que recibes. Finalmente decide cuánto puedes destinar al ahorro y a tus metas.'},
-    {keys:['cuanto debo ahorrar','cuánto debo ahorrar','porcentaje ahorrar'],answer:'💰 No existe una cantidad única que funcione para todos. Depende de tus ingresos, gastos y metas. Lo mejor es establecer una cantidad realista que puedas mantener y revisarla con tu presupuesto.'}
+    {keys:['cuanto debo ahorrar','cuánto debo ahorrar','porcentaje ahorrar'],answer:'💰 No existe una cantidad única que funcione para todos. Depende de tus ingresos, gastos y metas. Lo mejor es establecer una cantidad realista que puedas mantener y revisarla con tu presupuesto.'},
+
+    // Situaciones cotidianas: permiten hacer preguntas más naturales.
+    {keys:['me alcanza','me alcanzara','me alcanzará','alcanzar el dinero'],answer:'💡 Podemos revisarlo juntos. Dime cuánto dinero tienes o recibes, qué gastos debes cubrir y qué quieres comprar o ahorrar. Con esos datos podemos organizar un presupuesto sencillo.'},
+    {keys:['quiero comprar','quiero comprarme','me quiero comprar','puedo comprar','deberia comprar','debería comprar'],answer:'🛒 Antes de comprar, revisa tres cosas: cuánto tienes disponible, qué gastos importantes vienen y si la compra afecta alguna meta de ahorro. Si quieres, dime el precio y cuánto dinero tienes disponible y te ayudo a analizarlo.'},
+    {keys:['no puedo ahorrar','no logro ahorrar','no me alcanza','me cuesta ahorrar','dificil ahorrar','difícil ahorrar'],answer:'💚 No pasa nada si todavía te cuesta ahorrar. Empieza revisando en qué se va tu dinero, identifica un gasto que puedas reducir y establece una cantidad pequeña y realista para ahorrar periódicamente.'},
+    {keys:['gasto mucho','gasto demasiado','estoy gastando','como dejar de gastar','cómo dejar de gastar'],answer:'🧾 Primero registra tus gastos durante varios días. Después sepáralos entre necesidades y deseos y revisa cuáles podrías reducir. Así tendrás información real antes de hacer cambios.'},
+    {keys:['quiero ahorrar para','ahorrar para','meta para comprar','juntar dinero para'],answer:'🎯 ¡Perfecto! Convierte eso en una meta. Dime qué quieres conseguir, cuánto cuesta aproximadamente y en cuánto tiempo te gustaría lograrlo, y podemos calcular una cantidad de ahorro periódica.'},
+    {keys:['me prestaron','prestar dinero','me pidieron dinero','prestarle dinero'],answer:'🤝 Antes de prestar dinero, piensa si puedes permitirte no disponer de esa cantidad durante un tiempo y deja claros los acuerdos. También es importante no comprometer dinero que necesitas para tus gastos.'},
+    {keys:['trabajo','trabajar','primer sueldo','primer salario','mi primer pago'],answer:'💵 Cuando recibas un pago, puedes dividirlo en categorías: gastos necesarios, ahorro y metas, dejando también una cantidad para gastos personales. La proporción depende de tu situación.'},
+    {keys:['mes','fin de mes','final de mes','semana','quincena'],answer:'🗓️ Una buena práctica es revisar tus ingresos y gastos por períodos, por ejemplo semanalmente, quincenalmente o al final de cada mes. Así puedes detectar a tiempo si estás gastando más de lo planeado.'},
+    {keys:['familia','amigos','compartir gastos','gasto compartido'],answer:'🤝 Cuando compartas un gasto, acuerden desde el principio cuánto corresponde a cada persona y cuándo se realizará el pago. Llevar un registro evita confusiones.'},
+    {keys:['escuela','colegio','universidad','estudiante','estudiantes','clases'],answer:'🎓 Como estudiante puedes empezar con algo sencillo: registrar tus gastos diarios, separar dinero para transporte o materiales, establecer una pequeña meta de ahorro y revisar tu presupuesto cada semana.'}
   ];
 
   const normalize = text => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ\s]/g,' ').replace(/\s+/g,' ').trim();
@@ -77,17 +88,38 @@
 
   function findAnswer(question){
     const q=normalize(question);
-    if(!q) return {answer:'Escribe una pregunta y te ayudaré con Finanzas Jóvenes. 💚',known:true};
-    const greetings=['hola','holi','buenas','hey','buenos dias','buenas tardes','buenas noches'];
-    if(greetings.some(x=>q===x || q.startsWith(x+' '))) return {answer:'¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedo ayudarte con la plataforma y con educación financiera básica: ahorro, presupuesto, gastos, deudas, crédito, metas y más.',known:true};
+    if(!q) return {answer:'Escribe una pregunta y te ayudaré. 💚',known:true};
+
+    const greetings=['hola','holi','buenas','hey','buenos dias','buenas tardes','buenas noches','que tal','qué tal'];
+    if(greetings.some(x=>q===normalize(x) || q.startsWith(normalize(x)+' '))) return {answer:'¡Hola! 👋 Soy FJ, el asistente de Finanzas Jóvenes. Puedes preguntarme de forma natural sobre dinero, ahorro, compras, presupuesto, gastos, metas, deudas, crédito, estudios o sobre cómo usar la plataforma.',known:true};
+
+    const thanks=['gracias','muchas gracias','te agradezco','gracias fj'];
+    if(thanks.some(x=>q===normalize(x) || q.includes(normalize(x)))) return {answer:'¡Con gusto! 💚 Si quieres, puedes hacerme otra pregunta o contarme una situación y la revisamos juntos.',known:true};
+
+    const goodbye=['adios','adiós','bye','nos vemos','hasta luego'];
+    if(goodbye.some(x=>q===normalize(x) || q.startsWith(normalize(x)+' '))) return {answer:'¡Nos vemos! 👋 Cuando quieras puedes volver a preguntarme algo.',known:true};
+
     let best=null,bestScore=0;
+    const words=new Set(q.split(' ').filter(w=>w.length>=3));
     for(const item of KNOWLEDGE){
       let score=0;
-      for(const key of item.keys){const k=normalize(key);if(k && q.includes(k)) score += k.length >= 8 ? 3 : 2;}
+      for(const key of item.keys){
+        const k=normalize(key);
+        if(!k) continue;
+        if(q.includes(k)) score += k.split(' ').length>1 ? 5 : 2;
+        else if(k.length>=5 && words.has(k)) score += 2;
+      }
       if(score>bestScore){bestScore=score;best=item;}
     }
     if(best && bestScore>=2) return {answer:best.answer,known:true};
-    return {answer:'🤖 Esa pregunta todavía no está en mi base de conocimiento. Ya la puedo registrar para que sea revisada y, si corresponde, agregar una respuesta después. Por ahora puedo ayudarte con ahorro, presupuesto, gastos, metas, ingresos, deudas, crédito, intereses, inflación, seguridad financiera y otros temas de educación financiera básica. 💚',known:false};
+
+    // Respuestas abiertas por intención, aunque la frase no coincida exactamente con una palabra clave.
+    const hasAny=(arr)=>arr.some(x=>q.includes(x));
+    if(hasAny(['cuanto tengo','cuanto recibo','cuanto gano','cuanto dinero']) && hasAny(['gasto','gastare','necesito','puedo'])) return {answer:'💡 Puedo ayudarte a organizar esos números. Dime cuánto dinero recibes o tienes disponible, cuáles son tus gastos y qué quieres conseguir. No necesitas darme datos personales.',known:true};
+    if(hasAny(['como puedo','como hago','que hago','qué hago','ayudame','ayúdame']) && hasAny(['dinero','gasto','ahorro','comprar','compra','meta','deuda','presupuesto'])) return {answer:'💚 Claro. Cuéntame un poco más de tu situación: qué quieres lograr, cuánto dinero tienes disponible y qué gastos debes cubrir. Con eso puedo orientarte con pasos sencillos.',known:true};
+    if(hasAny(['es bueno','es malo','conviene','vale la pena','me recomiendas']) && hasAny(['comprar','gastar','ahorrar','deuda','prestamo','préstamo','credito','crédito'])) return {answer:'🤔 Depende de tus ingresos, gastos, objetivo y condiciones. Si me cuentas qué estás pensando hacer y los datos básicos de la situación, puedo explicarte los aspectos que conviene revisar antes de decidir.',known:true};
+
+    return {answer:'🤖 No necesito que escribas una pregunta exacta. Puedes contarme una situación con tus propias palabras, por ejemplo: “me dan Q500 al mes y quiero ahorrar para una laptop”, “gasto mucho en comida” o “quiero saber si me alcanza para algo”. 💚 Si aun así no entiendo la pregunta, la guardaré para ampliar mi conocimiento.',known:false};
   }
 
   function inject(){
@@ -110,7 +142,7 @@
       #fjChatInput{min-width:0;flex:1;padding:10px 11px;border:1px solid #294034;border-radius:12px;background:#050b07;color:#f4faf6;outline:none}
       #fjChatInput:focus{border-color:#39ff88}
       #fjChatSend{border:0;background:#39ff88;color:#041008;border-radius:12px;padding:0 14px;font-weight:900;cursor:pointer}
-      @media(max-width:600px){#fjChatbot{right:14px;bottom:14px}#fjChatPanel{right:-4px;bottom:72px;width:min(360px,calc(100vw - 28px));height:70vh;max-height:520px}}
+      @media(max-width:600px){#fjChatbot{right:14px;bottom:88px}#fjChatPanel{right:-4px;bottom:72px;width:min(360px,calc(100vw - 28px));height:70vh;max-height:520px}}
     `;
     document.head.appendChild(style);
     const root=document.createElement('div');root.id='fjChatbot';
@@ -118,7 +150,7 @@
       <div id="fjChatPanel" aria-label="Chat de Finanzas Jóvenes">
         <div class="fj-chat-head"><div><div class="fj-chat-title">🤖 <span>FJ</span> · Asistente</div><div class="fj-chat-sub">Finanzas Jóvenes · Educación financiera</div></div><button class="fj-chat-close" id="fjChatClose" aria-label="Cerrar">×</button></div>
         <div id="fjChatMessages"></div>
-        <form class="fj-chat-form" id="fjChatForm"><input id="fjChatInput" maxlength="300" autocomplete="off" placeholder="Escribe tu pregunta..."><button id="fjChatSend" type="submit">➤</button></form>
+        <form class="fj-chat-form" id="fjChatForm"><input id="fjChatInput" maxlength="500" autocomplete="off" placeholder="Cuéntame tu pregunta o situación..."><button id="fjChatSend" type="submit">➤</button></form>
       </div>
       <button id="fjChatButton" aria-label="Abrir asistente">🤖</button>
     `;
@@ -129,7 +161,7 @@
     document.getElementById('fjChatButton').onclick=()=>{panel.classList.toggle('show');if(panel.classList.contains('show'))input.focus();};
     document.getElementById('fjChatClose').onclick=()=>panel.classList.remove('show');
     document.getElementById('fjChatForm').onsubmit=e=>{e.preventDefault();ask(input.value)};
-    addMessage('¡Hola! 👋 Soy FJ. Puedo ayudarte con Finanzas Jóvenes y educación financiera básica. Escribe tu pregunta y te responderé.','bot');
+    addMessage('¡Hola! 👋 Soy FJ. Puedes preguntarme con tus propias palabras sobre dinero, ahorro, gastos, compras, metas, presupuesto o sobre la plataforma.','bot');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{initDatabase();inject();}); else {initDatabase();inject();}
 })();
