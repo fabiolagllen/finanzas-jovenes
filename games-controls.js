@@ -26,7 +26,7 @@ function init(){
   const moveTo=v=>{x=Math.max(7,Math.min(93,v));cart.style.left=x+'%';};
   const clearFalling=()=>{fallTimers.forEach(id=>clearInterval(id));fallTimers.clear();};
   const clearGameTimers=()=>{clearInterval(timer);clearInterval(spawnTimer);timer=null;spawnTimer=null;clearFalling();};
-  const cleanup=()=>{clearGameTimers();board.querySelectorAll('.fj-target').forEach(e=>e.remove());if(keyHandler)document.removeEventListener('keydown',keyHandler);keyHandler=null;running=false;paused=false;};
+  const cleanup=()=>{clearGameTimers();board.querySelectorAll('.fj-target').forEach(e=>e.remove());if(keyHandler)document.removeEventListener('keydown',keyHandler);keyHandler=null;running=false;paused=false;board.classList.remove('is-paused');};
 
   const award=async points=>{
     if(!points||!window.supabaseClient)return;
@@ -107,7 +107,7 @@ function init(){
   };
 
   window.fjCartStart=togglePause;
-  btn.addEventListener('click',e=>{e.preventDefault();togglePause();},{capture:true});
+  btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();togglePause();},{capture:true});
 
   const style=document.createElement('style');
   style.textContent=`
