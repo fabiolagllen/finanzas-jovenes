@@ -7,8 +7,8 @@
     {id:'aprende',icon:'📚',label:'Aprende',href:'#aprende'},
     {id:'herramientas',icon:'💰',label:'Finanzas',href:'#herramientas'},
     {id:'panel',icon:'📊',label:'Mi panel',href:'#panel'},
-    {id:'perfil',icon:'👤',label:'Perfil',href:'./profile.html'},
-    {id:'pagos',icon:'🔔',label:'Recordatorios',href:'#pagos'}
+    {id:'pagos',icon:'🔔',label:'Recordatorios',href:'#pagos'},
+    {id:'perfil',icon:'👤',label:'Perfil',href:'./profile.html'}
   ];
 
   function isProfile(){
