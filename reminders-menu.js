@@ -5,11 +5,23 @@
 
   function getItems(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
   function saveItems(items){localStorage.setItem(KEY,JSON.stringify(items))}
-  function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+  function esc(v){return String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]))}
   function dateText(v){return new Date(v+'T00:00:00').toLocaleDateString('es-GT',{weekday:'short',day:'numeric',month:'long',year:'numeric'})}
 
-  function build(){
+  function getSection(){
     let section=document.getElementById('pagos');
+    if(section)return section;
+    const main=document.querySelector('main');
+    if(!main)return null;
+    section=document.createElement('section');
+    section.id='pagos';
+    section.className='fj-reminders';
+    main.appendChild(section);
+    return section;
+  }
+
+  function build(){
+    const section=getSection();
     if(!section)return;
     section.classList.add('fj-reminders-section');
 
@@ -78,6 +90,11 @@
     @media(max-width:900px){.fj-reminders-app{padding:17px 12px}.fj-reminder-grid{grid-template-columns:1fr}.fj-reminder-save{width:100%}.fj-reminder-item{align-items:flex-start}.fj-reminder-delete{font-size:.75rem}}
   `;document.head.appendChild(s)}
 
-  function start(){styles();build();let n=0;const t=setInterval(()=>{if(document.getElementById('pagos'))build();if(++n>20)clearInterval(t)},300)}
+  function start(){
+    styles();
+    build();
+    let n=0;
+    const t=setInterval(()=>{build();if(++n>30)clearInterval(t)},300);
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
