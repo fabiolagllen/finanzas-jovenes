@@ -96,4 +96,5 @@
 
   async function init(){db=getDb();if(!db)return;build();currentUser=await getUser();await loadPayments();await setupPermission();db.auth.onAuthStateChange(async(_e,session)=>{currentUser=session?.user||null;await loadPayments();await setupPermission()});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  if(!document.querySelector('script[data-fj-financial-helper]')){const helper=document.createElement('script');helper.src='./financial-helper.js?v=1';helper.dataset.fjFinancialHelper='true';document.head.appendChild(helper)}
 })();
