@@ -1,4 +1,4 @@
-/* Finanzas Jóvenes — blindaje de autenticación */
+/* Finanzas Jóvenes — blindaje de autenticación + navegación */
 (function(){
   'use strict';
 
@@ -65,11 +65,44 @@
     if(message)message.textContent=logged?'Tu panel se actualiza con tus movimientos financieros de este mes.':'Inicia sesión para guardar y consultar tus datos financieros.';
   }
 
+  function installNavigationFix(){
+    if(window.__fjNavigationFixInstalled)return;
+    window.__fjNavigationFixInstalled=true;
+    const normalize=p=>{
+      const clean=(p||'/').replace(/\\/+$/,'')||'/';
+      return clean==='/'?'/index.html':clean;
+    };
+    document.addEventListener('click',event=>{
+      if(event.defaultPrevented)return;
+      const link=event.target.closest('a[href]');
+      if(!link)return;
+      if(link.target && link.target!=='_self')return;
+      if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      const url=new URL(link.href,location.href);
+      const samePage=normalize(url.pathname)===normalize(location.pathname);
+      if(!samePage||!url.hash)return;
+      const id=decodeURIComponent(url.hash.slice(1));
+      const target=document.getElementById(id);
+      if(!target)return;
+      event.preventDefault();
+      history.pushState(null,'',location.pathname+url.hash);
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+      document.dispatchEvent(new CustomEvent('fj:navigation',{detail:{id}}));
+    },true);
+    window.addEventListener('popstate',()=>{
+      const id=decodeURIComponent(location.hash.replace(/^#/,'').trim());
+      if(!id)return;
+      const target=document.getElementById(id);
+      if(target)requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
+    });
+  }
+
   function install(){
     ensureAuthDom();
     window.openAuth=safeOpenAuth;
     window.closeAuth=safeCloseAuth;
     window.renderUser=safeRenderUser;
+    installNavigationFix();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
