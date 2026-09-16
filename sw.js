@@ -1,11 +1,11 @@
-const CACHE_NAME = 'finanzas-jovenes-v3';
+const CACHE_NAME = 'finanzas-jovenes-v4';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
   './games.js',
-  './games-controls.js',
+  './games-controls.js?v=2',
   './mobile-app.js'
 ];
 
