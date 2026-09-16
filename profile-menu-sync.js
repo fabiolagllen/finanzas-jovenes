@@ -7,8 +7,7 @@
     {id:'aprende',icon:'📚',label:'Aprende',href:'#aprende'},
     {id:'herramientas',icon:'💰',label:'Finanzas',href:'#herramientas'},
     {id:'panel',icon:'📊',label:'Mi panel',href:'#panel'},
-    {id:'pagos',icon:'🔔',label:'Recordatorios',href:'#pagos'},
-    {id:'perfil',icon:'👤',label:'Perfil',href:'./profile.html'}
+    {id:'pagos',icon:'🔔',label:'Recordatorios',href:'#pagos'}
   ];
 
   function isProfile(){
@@ -17,7 +16,7 @@
   }
 
   function currentId(){
-    if(isProfile())return 'perfil';
+    if(isProfile())return 'inicio';
     const hash=location.hash.toLowerCase();
     if(hash==='#aprende')return 'aprende';
     if(hash==='#herramientas')return 'herramientas';
@@ -41,7 +40,6 @@
   function navigate(href){
     const hash=(href.split('#')[1]||'').trim();
     if(hash){goSection(hash);return;}
-    if(href.endsWith('profile.html')){location.href=href;return;}
     window.scrollTo({top:0,behavior:'smooth'});
     history.pushState(null,'',location.pathname);
     setActive();
@@ -83,7 +81,7 @@
   }
 
   function authAction(){
-    if(location.pathname.toLowerCase().endsWith('/profile.html')||location.pathname.toLowerCase().endsWith('/profile'))return;
+    if(isProfile())return;
     location.href='./profile.html';
   }
 
