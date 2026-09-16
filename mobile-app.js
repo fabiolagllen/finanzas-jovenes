@@ -14,7 +14,7 @@
   function loadGamesControls(){
     if(document.querySelector('script[data-fj-games-controls]')) return;
     const script=document.createElement('script');
-    script.src='./games-controls.js?v=1';
+    script.src='./games-controls.js?v=2';
     script.dataset.fjGamesControls='true';
     document.body.appendChild(script);
   }
