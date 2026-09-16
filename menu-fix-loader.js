@@ -1,22 +1,14 @@
-/* Carga los módulos globales del sitio en un orden controlado. */
+/* Finanzas Jóvenes — cargador de módulos compartidos */
 (function(){
-  const sharedMenu=document.createElement('script');
-  sharedMenu.src='profile-menu-sync.js?v=7';
-  sharedMenu.defer=true;
-  document.head.appendChild(sharedMenu);
-
-  const games=document.createElement('script');
-  games.src='fix-games-menu.js';
-  games.defer=true;
-  document.body.appendChild(games);
-
-  const pwa=document.createElement('script');
-  pwa.src='pwa.js';
-  pwa.defer=true;
-  document.body.appendChild(pwa);
-
-  const reminders=document.createElement('script');
-  reminders.src='reminders-menu.js?v=2';
-  reminders.defer=true;
-  document.body.appendChild(reminders);
+  'use strict';
+  function load(src){
+    const s=document.createElement('script');
+    s.src=src;
+    s.defer=true;
+    document.head.appendChild(s);
+  }
+  load('profile-menu-sync.js?v=7');
+  load('fix-games-menu.js?v=1');
+  load('pwa.js?v=1');
+  load('reminders-menu.js?v=2');
 })();
