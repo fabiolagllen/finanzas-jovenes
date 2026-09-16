@@ -83,10 +83,8 @@
   }
 
   function authAction(){
-    const path=location.pathname.toLowerCase();const client=window.supabaseClient||window.__fjSharedSupabase;
-    if(client?.auth?.signOut){client.auth.signOut().then(()=>{if(path.endsWith('/profile.html')||path.endsWith('/profile'))location.href='./index.html'});return;}
-    if(window.logout){window.logout();return;}
-    location.href='./index.html';
+    if(location.pathname.toLowerCase().endsWith('/profile.html')||location.pathname.toLowerCase().endsWith('/profile'))return;
+    location.href='./profile.html';
   }
 
   function loginAction(){
@@ -96,7 +94,8 @@
 
   function updateAuthButton(session){
     const button=document.querySelector('.fj-menu-user button');if(!button)return;
-    button.textContent=session?'Cerrar sesión 🚪':'Iniciar sesión 🔐';button.onclick=session?authAction:loginAction;
+    button.textContent=session?'Perfil 👤':'Iniciar sesión 🔐';
+    button.onclick=session?authAction:loginAction;
   }
 
   async function syncAuth(){
