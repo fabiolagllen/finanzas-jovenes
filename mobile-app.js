@@ -164,7 +164,9 @@
   function isStandalone(){return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
 
   function setupInstallExperience(){
-    if(isStandalone()||localStorage.getItem('fjInstallChoice'))return;
+    // Se muestra cada vez que se abre el enlace en el navegador.
+    // Ya no se guarda la elección en localStorage, para facilitar las pruebas.
+    if(isStandalone())return;
     let deferredPrompt=null;
     const overlay=document.createElement('div');overlay.className='fj-install-overlay';overlay.id='fjInstallOverlay';overlay.innerHTML=`
       <div class="fj-install-card">
@@ -178,15 +180,15 @@
         <div class="fj-install-help" id="fjInstallHelp"></div>
       </div>`;
     document.body.appendChild(overlay);
-    const closeWeb=()=>{localStorage.setItem('fjInstallChoice','web');overlay.remove();};
+    const closeWeb=()=>{overlay.remove();};
     document.getElementById('fjContinueWeb').addEventListener('click',closeWeb);
     const installBtn=document.getElementById('fjInstallChoiceButton');
     installBtn.addEventListener('click',async()=>{
-      if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;localStorage.setItem('fjInstallChoice','installed-choice');overlay.remove();return;}
+      if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;overlay.remove();return;}
       const help=document.getElementById('fjInstallHelp');help.innerHTML='<strong>Instalación no disponible todavía.</strong><br>En Chrome/Edge, usa el botón de instalación de la barra de direcciones si aparece. En iPhone/iPad, abre Compartir y elige <strong>Añadir a pantalla de inicio</strong>.';help.classList.add('show');
     });
     window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredPrompt=event;});
-    window.addEventListener('appinstalled',()=>{localStorage.setItem('fjInstallChoice','installed');overlay.remove();});
+    window.addEventListener('appinstalled',()=>{overlay.remove();});
   }
 
   function setupPWA(){
