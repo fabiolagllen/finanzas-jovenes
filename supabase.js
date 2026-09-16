@@ -7,6 +7,21 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
+// Compatibilidad con la lógica antigua de index.html: estos elementos son invisibles
+// y solo evitan errores mientras el menú compartido controla el botón real.
+(function ensureAuthCompatibility(){
+  if(!document.body)return;
+  ['authButton','logoutButton'].forEach(id=>{
+    if(document.getElementById(id))return;
+    const el=document.createElement('button');
+    el.id=id;
+    el.type='button';
+    el.style.display='none';
+    el.setAttribute('aria-hidden','true');
+    document.body.appendChild(el);
+  });
+})();
+
 /* Finanzas Jóvenes - datos persistentes por usuario.
    Las tablas tienen RLS, por lo que cada usuario solo puede trabajar con sus propios datos. */
 (function(){
