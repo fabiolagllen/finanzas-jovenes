@@ -11,6 +11,14 @@
     document.head.appendChild(link);
   }
 
+  function loadGamesControls(){
+    if(document.querySelector('script[data-fj-games-controls]')) return;
+    const script=document.createElement('script');
+    script.src='./games-controls.js?v=1';
+    script.dataset.fjGamesControls='true';
+    document.body.appendChild(script);
+  }
+
   function addStyles(){
     if(document.getElementById('fjMobileStyles')) return;
     const s=document.createElement('style');
@@ -114,6 +122,6 @@
     if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   }
 
-  function init(){loadEditorialStyle();addStyles();setupPWA();setupNav();setTimeout(observeSections,300);setTimeout(setupInstallExperience,450);}
+  function init(){loadEditorialStyle();addStyles();setupPWA();setupNav();loadGamesControls();setTimeout(observeSections,300);setTimeout(setupInstallExperience,450);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
