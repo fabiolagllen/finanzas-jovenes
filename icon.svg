@@ -1,19 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
 <defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#173b26"/><stop offset="1" stop-color="#030604"/></linearGradient>
-  <linearGradient id="coin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b5ff63"/><stop offset="1" stop-color="#39ff88"/></linearGradient>
-  <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#10271a"/>
+    <stop offset="1" stop-color="#07110b"/>
+  </linearGradient>
+  <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#c9ff82"/>
+    <stop offset="1" stop-color="#38e879"/>
+  </linearGradient>
 </defs>
-<rect width="512" height="512" rx="118" fill="#030604"/>
-<rect x="24" y="24" width="464" height="464" rx="104" fill="url(#bg)" stroke="#39ff88" stroke-width="7"/>
-<circle cx="256" cy="256" r="154" fill="#06100a" stroke="#1e6b3b" stroke-width="7"/>
-<circle cx="256" cy="256" r="126" fill="url(#coin)" filter="url(#glow)"/>
-<circle cx="256" cy="256" r="104" fill="#06100a"/>
-<!-- símbolo financiero estilizado -->
-<path d="M211 168v176M301 168v176M211 184h62c28 0 45 17 45 40s-17 40-45 40h-62m0 0h68c30 0 48 17 48 40s-18 40-48 40h-68" fill="none" stroke="#39ff88" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-<!-- crecimiento -->
-<path d="M182 382l42-42 30 25 76-82" fill="none" stroke="#b5ff63" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M306 283h24v24" fill="none" stroke="#b5ff63" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="397" cy="115" r="29" fill="#39ff88"/>
-<path d="M385 115h24M397 103v24" stroke="#031008" stroke-width="7" stroke-linecap="round"/>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<rect x="1" y="1" width="510" height="510" rx="111" fill="none" stroke="#244c31" stroke-width="2"/>
+
+<!-- símbolo abstracto de crecimiento financiero, sin texto -->
+<path d="M146 330c0-86 50-150 128-150 40 0 73 15 94 40" fill="none" stroke="#dfffc1" stroke-width="28" stroke-linecap="round"/>
+<path d="M146 330c0 31 25 56 56 56h83c45 0 83-37 83-83" fill="none" stroke="url(#mark)" stroke-width="28" stroke-linecap="round"/>
+<path d="M333 132l62 62-62 62" fill="none" stroke="url(#mark)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- pequeño detalle que recuerda una moneda, integrado -->
+<circle cx="158" cy="164" r="13" fill="#39ed7c"/>
 </svg>
