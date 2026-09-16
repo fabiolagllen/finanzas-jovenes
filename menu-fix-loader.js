@@ -16,7 +16,7 @@
   document.body.appendChild(pwa);
 
   const reminders=document.createElement('script');
-  reminders.src='reminders-menu.js?v=1';
+  reminders.src='reminders-menu.js?v=2';
   reminders.defer=true;
   document.body.appendChild(reminders);
 })();
