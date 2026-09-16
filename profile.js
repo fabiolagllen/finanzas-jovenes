@@ -12,8 +12,8 @@
     const {data:{session}}=await c.auth.getSession();
     updateProfileMenu(session);
     c.auth.onAuthStateChange((_event,newSession)=>updateProfileMenu(newSession));
-    document.addEventListener('click',e=>{const btn=e.target.closest?.('.fj-mobile-nav button[data-target="perfil"]');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();window.location.href='./profile.html';},true);
+    document.addEventListener('click',e=>{const btn=e.target.closest?.('.fj-mobile-nav button[data-target="perfil"]');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();window.location.href='./perfil.html';},true);
   }
-  window.openProfile=function(){window.location.href='./profile.html';};
+  window.openProfile=function(){window.location.href='./perfil.html';};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
