@@ -11,6 +11,14 @@
     document.head.appendChild(link);
   }
 
+  function loadNotifications(){
+    if(document.querySelector('script[data-fj-notifications]')) return;
+    const script=document.createElement('script');
+    script.src='./notifications.js?v=1';
+    script.dataset.fjNotifications='true';
+    document.head.appendChild(script);
+  }
+
   function removeGames(){
     const remove=()=>{
       const games=document.getElementById('fjGames');
@@ -118,6 +126,6 @@
     if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   }
 
-  function init(){loadEditorialStyle();addStyles();setupPWA();setupNav();removeGames();setTimeout(observeSections,300);setTimeout(setupInstallExperience,450);}
+  function init(){loadEditorialStyle();addStyles();setupPWA();loadNotifications();setupNav();removeGames();setTimeout(observeSections,300);setTimeout(setupInstallExperience,450);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
