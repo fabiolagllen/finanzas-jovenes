@@ -38,15 +38,18 @@
       body>header .fj-menu-user{display:flex!important;flex-direction:column!important;gap:9px!important;margin-top:auto!important;padding-top:18px!important}
       body>header .fj-menu-user button{width:100%!important;border:0!important;background:rgba(23,37,29,.92)!important;color:#39ff88!important;padding:10px 15px!important;border-radius:15px!important;font-weight:800!important;cursor:pointer!important;border:1px solid #355440!important}
       .fj-mobile-nav{display:none!important}
+      #pagos{scroll-margin-top:30px}
+      .fj-reminders{max-width:1180px;margin:auto;padding:0 24px 72px}
+      .fj-reminder-card{background:linear-gradient(145deg,#112017,#08100b);border:1px solid #31503d;border-radius:27px;padding:28px;box-shadow:0 0 50px rgba(57,255,136,.06)}
+      .fj-reminder-card h2{margin:0 0 7px;font-size:2rem}.fj-reminder-card>p{color:#9eafa5;margin:0 0 20px}.fj-reminder-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fj-reminder{padding:16px;background:#0a110d;border:1px solid #294034;border-radius:15px}.fj-reminder strong{display:block;color:#39ff88;margin-bottom:4px}.fj-reminder span{display:block;color:#9eafa5;font-size:.88rem}.fj-reminder-action{margin-top:14px;display:flex;gap:9px;flex-wrap:wrap}.fj-reminder-action button{border:1px solid #39ff88;background:#39ff88;color:#041008;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer}.fj-reminder-action button.secondary{background:#0a120d;color:#dce9e1;border-color:#294034}
       @media(max-width:900px){
         body{padding-left:0!important;padding-bottom:94px!important}
         body>header{display:none!important}
         .fj-mobile-nav{display:flex!important;position:fixed!important;left:10px!important;right:10px!important;bottom:10px!important;height:68px!important;padding:7px!important;align-items:stretch!important;justify-content:space-around!important;gap:4px!important;background:rgba(8,17,12,.96)!important;border:1px solid rgba(57,255,136,.22)!important;border-radius:22px!important;box-shadow:0 15px 45px rgba(0,0,0,.55),0 0 25px rgba(57,255,136,.08)!important;backdrop-filter:blur(18px)!important;z-index:9998!important}
         .fj-mobile-nav button{flex:1!important;min-width:0!important;border:0!important;background:transparent!important;color:#8fa197!important;border-radius:16px!important;font-size:.66rem!important;font-weight:800!important;cursor:pointer!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;line-height:1.15!important}
-        .fj-mobile-nav button span{font-size:1.18rem!important}
-        .fj-mobile-nav button.active{background:rgba(57,255,136,.12)!important;color:#39ff88!important}
+        .fj-mobile-nav button span{font-size:1.18rem!important}.fj-mobile-nav button.active{background:rgba(57,255,136,.12)!important;color:#39ff88!important}
+        .fj-reminders{padding:0 12px 40px}.fj-reminder-card{padding:18px 14px;border-radius:18px}.fj-reminder-card h2{font-size:1.35rem}.fj-reminder-card>p{font-size:.78rem;line-height:1.45}.fj-reminder-grid{grid-template-columns:1fr;gap:8px}.fj-reminder{padding:12px}.fj-reminder span{font-size:.75rem}.fj-reminder-action button{width:100%;font-size:.78rem}
       }
-      @media(max-width:380px){.fj-mobile-nav{left:6px!important;right:6px!important;bottom:6px!important;height:65px!important}.fj-mobile-nav button{font-size:.57rem!important}.fj-mobile-nav button span{font-size:1.05rem!important}}
     `;
     document.head.appendChild(s);
   }
@@ -57,76 +60,97 @@
     document.querySelectorAll('.fj-mobile-nav [data-target]').forEach(el=>el.classList.toggle('active',el.dataset.target===id));
   }
 
+  function authClient(){
+    if(window.supabaseClient?.auth) return window.supabaseClient;
+    if(window.supabase?.createClient){
+      try{
+        window.__fjSharedSupabase=window.__fjSharedSupabase||window.supabase.createClient('https://pgfgmxeqisrwkrwtvbum.supabase.co','sb_publishable_6al9XSM0nTc6-RlkX2UUrw_SLaQdwEh');
+        return window.__fjSharedSupabase;
+      }catch(e){}
+    }
+    return null;
+  }
+
+  function authAction(){
+    const path=location.pathname.toLowerCase();
+    if(window.supabaseClient?.auth?.signOut || window.__fjSharedSupabase?.auth?.signOut){
+      const client=window.supabaseClient||window.__fjSharedSupabase;
+      client.auth.signOut().then(()=>{
+        if(path.endsWith('/profile.html')||path.endsWith('/profile')) location.href='./index.html';
+      });
+      return;
+    }
+    if(window.logout){window.logout();return}
+    location.href='./index.html';
+  }
+
+  function loginAction(){
+    if(typeof window.openAuth==='function'){window.openAuth('login');return}
+    sessionStorage.setItem('fj_open_login','1');
+    location.href='./index.html';
+  }
+
+  function updateAuthButton(session){
+    const button=document.querySelector('.fj-menu-user button');
+    if(!button)return;
+    const logged=!!session;
+    button.textContent=logged?'Cerrar sesión 🚪':'Iniciar sesión 🔐';
+    button.onclick=logged?authAction:loginAction;
+    button.setAttribute('aria-label',logged?'Cerrar sesión':'Iniciar sesión');
+  }
+
+  async function syncAuth(){
+    const client=authClient();
+    if(!client?.auth){updateAuthButton(null);return}
+    try{
+      const {data}=await client.auth.getSession();
+      updateAuthButton(data?.session||null);
+      client.auth.onAuthStateChange((_event,session)=>updateAuthButton(session));
+    }catch(e){updateAuthButton(null)}
+  }
+
+  function ensureReminders(){
+    if(location.pathname.toLowerCase().endsWith('/profile.html')||location.pathname.toLowerCase().endsWith('/profile'))return;
+    if(document.getElementById('pagos'))return;
+    const main=document.querySelector('main');
+    if(!main)return;
+    const section=document.createElement('section');
+    section.id='pagos';
+    section.className='fj-reminders';
+    section.innerHTML=`<div class="fj-reminder-card"><h2>🔔 Mis recordatorios</h2><p>Ten presentes tus pagos y revisiones para mantener tus finanzas organizadas.</p><div class="fj-reminder-grid"><div class="fj-reminder"><strong>📅 Revisa tus gastos</strong><span>Haz una revisión al menos una vez por semana.</span></div><div class="fj-reminder"><strong>💰 Revisa tus metas</strong><span>Comprueba cuánto llevas ahorrado y qué te falta.</span></div><div class="fj-reminder"><strong>🧾 Registra tus pagos</strong><span>Anota cada gasto importante para no perder el control.</span></div><div class="fj-reminder"><strong>🔎 Revisa antes de comprar</strong><span>Piensa si la compra está dentro de tu presupuesto.</span></div></div><div class="fj-reminder-action"><button type="button" onclick="location.hash='herramientas'">Ir a Finanzas</button><button type="button" class="secondary" onclick="location.hash='panel'">Ver mi panel</button></div></div>`;
+    const cta=main.querySelector('.cta')?.closest('section');
+    if(cta)main.insertBefore(section,cta);else main.appendChild(section);
+  }
+
   function build(){
     styles();
-
-    // Elimina cualquier menú móvil creado por otros módulos: solo queda este.
     document.querySelectorAll('.fj-mobile-nav').forEach((el,i)=>{if(i>0)el.remove()});
-
     let header=document.body.querySelector(':scope>header');
-    if(!header){
-      header=document.createElement('header');
-      document.body.prepend(header);
-    }
+    if(!header){header=document.createElement('header');document.body.prepend(header)}
     let nav=header.querySelector('nav');
     if(!nav){nav=document.createElement('nav');header.replaceChildren(nav)}
-
-    const logo=document.createElement('div');
-    logo.className='fj-shared-logo';
-    logo.innerHTML='Finanzas<span>Jóvenes</span>';
-
-    const links=document.createElement('div');
-    links.className='fj-menu-links';
-    ITEMS.forEach(item=>{
-      const a=document.createElement('a');
-      a.href=item.href;
-      a.dataset.menuId=item.id;
-      a.textContent=item.icon+' '+item.label;
-      links.appendChild(a);
-    });
-
-    const user=document.createElement('div');
-    user.className='fj-menu-user';
-    const logout=document.createElement('button');
-    logout.type='button';
-    logout.textContent='Cerrar sesión 🚪';
-    logout.addEventListener('click',()=>window.logoutPage?.());
-    user.appendChild(logout);
-    nav.replaceChildren(logo,links,user);
-
+    const logo=document.createElement('div');logo.className='fj-shared-logo';logo.innerHTML='Finanzas<span>Jóvenes</span>';
+    const links=document.createElement('div');links.className='fj-menu-links';
+    ITEMS.forEach(item=>{const a=document.createElement('a');a.href=item.href;a.dataset.menuId=item.id;a.textContent=item.icon+' '+item.label;links.appendChild(a)});
+    const user=document.createElement('div');user.className='fj-menu-user';
+    const auth=document.createElement('button');auth.type='button';user.appendChild(auth);nav.replaceChildren(logo,links,user);
     let mobile=document.querySelector('.fj-mobile-nav');
-    if(!mobile){
-      mobile=document.createElement('nav');
-      mobile.className='fj-mobile-nav';
-      mobile.setAttribute('aria-label','Navegación móvil');
-      document.body.appendChild(mobile);
-    }
-    mobile.replaceChildren();
-    ITEMS.forEach(item=>{
-      const b=document.createElement('button');
-      b.type='button';
-      b.dataset.target=item.id;
-      b.innerHTML='<span>'+item.icon+'</span>'+item.label;
-      b.addEventListener('click',()=>location.href=item.href);
-      mobile.appendChild(b);
-    });
-    setActive();
+    if(!mobile){mobile=document.createElement('nav');mobile.className='fj-mobile-nav';mobile.setAttribute('aria-label','Navegación móvil');document.body.appendChild(mobile)}
+    mobile.replaceChildren();ITEMS.forEach(item=>{const b=document.createElement('button');b.type='button';b.dataset.target=item.id;b.innerHTML='<span>'+item.icon+'</span>'+item.label;b.addEventListener('click',()=>location.href=item.href);mobile.appendChild(b)});
+    setActive();updateAuthButton(null);ensureReminders();syncAuth();
   }
 
   function start(){
     build();
-    window.addEventListener('hashchange',setActive);
-    // Algunos módulos antiguos todavía intentan reconstruir el menú. Este observer
-    // garantiza que el menú compartido sea siempre la única estructura visible.
+    window.addEventListener('hashchange',()=>{setActive();ensureReminders()});
     const observer=new MutationObserver(()=>{
       const header=document.body.querySelector(':scope>header');
       const links=header?.querySelector('.fj-menu-links');
       const mobile=document.querySelector('.fj-mobile-nav');
-      if(!links || !mobile || links.children.length!==ITEMS.length){build();}
+      if(!links||!mobile||links.children.length!==ITEMS.length)build();
     });
     observer.observe(document.body,{childList:true,subtree:true});
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
