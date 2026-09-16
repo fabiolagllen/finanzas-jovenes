@@ -114,6 +114,12 @@
 
   function build(){
     styles();document.querySelectorAll('.fj-mobile-nav').forEach((el,i)=>{if(i>0)el.remove()});
+
+    /* Elimina cualquier menú antiguo/estático para dejar únicamente el menú compartido. */
+    document.querySelectorAll('body>header').forEach(header=>{
+      if(!header.querySelector('.fj-shared-logo'))header.remove();
+    });
+
     let header=document.body.querySelector(':scope>header');if(!header){header=document.createElement('header');document.body.prepend(header)}
     let nav=header.querySelector('nav');if(!nav){nav=document.createElement('nav');header.replaceChildren(nav)}
     const logo=document.createElement('div');logo.className='fj-shared-logo';logo.innerHTML='Finanzas<span>Jóvenes</span>';
