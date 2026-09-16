@@ -1,7 +1,7 @@
 /* Carga los módulos globales del sitio en un orden controlado. */
 (function(){
   const sharedMenu=document.createElement('script');
-  sharedMenu.src='profile-menu-sync.js?v=2';
+  sharedMenu.src='profile-menu-sync.js?v=6';
   sharedMenu.defer=true;
   document.head.appendChild(sharedMenu);
 
