@@ -25,7 +25,8 @@
       header nav .fj-menu-links a{position:relative!important;display:flex!important;align-items:center!important;color:#cbd7d0!important;text-decoration:none!important;margin:0!important;padding:12px 13px!important;border-radius:15px!important;font-size:.91rem!important;font-weight:700!important;transition:.22s!important;border:1px solid rgba(255,255,255,.025)!important;background:rgba(255,255,255,.018)!important;box-shadow:0 5px 14px rgba(0,0,0,.10)!important}
       header nav .fj-menu-links a:hover{color:#39ff88!important;background:rgba(57,255,136,.105)!important;border-color:rgba(57,255,136,.20)!important;box-shadow:0 9px 24px rgba(0,0,0,.22),0 0 16px rgba(57,255,136,.05)!important;transform:translateX(4px)!important}
       header nav .fj-menu-links a.active{color:#39ff88!important;background:rgba(57,255,136,.105)!important;border-color:rgba(57,255,136,.20)!important}
-      header nav .fj-menu-user{display:flex!important;flex-direction:column!important;gap:9px!important;margin:15px 0 0!important}
+      /* El acceso/salida queda separado y pegado al fondo del menú de escritorio. */
+      header nav .fj-menu-user{display:flex!important;flex-direction:column!important;gap:9px!important;margin-top:auto!important;padding-top:18px!important}
       header nav .fj-menu-user button{width:100%!important;border:0!important;background:rgba(23,37,29,.92)!important;color:#39ff88!important;padding:10px 15px!important;border-radius:15px!important;font-weight:800!important;cursor:pointer!important;border:1px solid #355440!important}
       @media(max-width:900px){
         body{padding-left:0!important;padding-bottom:94px!important}
