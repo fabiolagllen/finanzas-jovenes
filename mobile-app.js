@@ -14,11 +14,35 @@
   function setupNav(){addMobileNav();watchDesktopMenu();}
   function setActive(id){document.querySelectorAll('.fj-mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));}
   function setProfileVisible(visible){const mobile=document.querySelector('.fj-mobile-nav button[data-target="perfil"]');if(mobile)mobile.style.setProperty('display',visible?'flex':'none','important');const desktop=document.querySelector('.fj-desktop-profile');if(desktop)desktop.style.setProperty('display',visible?'flex':'none','important');}
-  function setupAuthWatcher(){setProfileVisible(false);const waitForSupabase=()=>{if(window.supabase&&typeof window.supabase.createClient==='function'){try{const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);db.auth.getUser().then(({data})=>setProfileVisible(!!data?.user)).catch(()=>setProfileVisible(false));db.auth.onAuthStateChange((_event,session)=>setProfileVisible(!!session?.user));return;}catch(e){setProfileVisible(false);return;}}setTimeout(waitForSupabase,150);};waitForSupabase();}
+  function setupAuthWatcher(){setProfileVisible(false);const waitForSupabase=()=>{if(window.supabase&&typeof window.supabase.createClient==='function'){try{const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);db.auth.getUser().then(({data})=>setProfileVisible(!!data?.user)).catch(()=>setProfileVisible(false));db.auth.onAuthStateChange((event,session)=>{setProfileVisible(!!session?.user);if(event==='SIGNED_OUT')localStorage.removeItem('fj_install_prompt_seen');});return;}catch(e){setProfileVisible(false);return;}}setTimeout(waitForSupabase,150);};waitForSupabase();}
   function observeSections(){const ids=['inicio','herramientas','interactivo','panel'];const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);if(!('IntersectionObserver'in window))return;const io=new IntersectionObserver(entries=>{const v=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(v)setActive(v.target.id);},{rootMargin:'-25% 0px -55% 0px',threshold:[.05,.2,.5]});sections.forEach(s=>io.observe(s));}
-  function isStandalone(){return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
+  function isStandalone(){return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;}
+  function markInstalled(){try{localStorage.setItem('fj_app_installed','1');localStorage.removeItem('fj_install_prompt_seen');}catch(e){}}
   async function hasActiveUser(){try{if(window.supabase&&typeof window.supabase.createClient==='function'){const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const {data}=await db.auth.getUser();return !!data?.user;}}catch(e){}return false;}
-  async function setupInstallExperience(){if(isStandalone())return;const loggedIn=await hasActiveUser();const firstVisit=!localStorage.getItem('fj_has_visited');if(loggedIn&&!firstVisit)return;if(loggedIn)return;localStorage.setItem('fj_has_visited','1');let deferredPrompt=null;const overlay=document.createElement('div');overlay.className='fj-install-overlay';overlay.id='fjInstallOverlay';overlay.innerHTML='<div class="fj-install-card"><div class="fj-install-logo">💚</div><h2>Finanzas <span>Jóvenes</span></h2><p>Aprende a manejar tu dinero de forma fácil, practica con herramientas y lleva tus metas contigo.</p><div class="fj-install-actions"><button class="fj-install-main" id="fjInstallChoiceButton">📲 Instalar aplicación</button><button class="fj-install-web" id="fjContinueWeb">🌐 Continuar en la página</button></div></div>';document.body.appendChild(overlay);document.getElementById('fjContinueWeb').addEventListener('click',()=>overlay.remove());window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});document.getElementById('fjInstallChoiceButton').addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;overlay.remove();}});window.addEventListener('appinstalled',()=>overlay.remove());}
+  async function setupInstallExperience(){
+    if(isStandalone())return;
+    if(localStorage.getItem('fj_app_installed')==='1')return;
+    const loggedIn=await hasActiveUser();
+    if(loggedIn)return;
+    if(localStorage.getItem('fj_install_prompt_seen')==='1')return;
+    localStorage.setItem('fj_install_prompt_seen','1');
+    let deferredPrompt=null;
+    const overlay=document.createElement('div');
+    overlay.className='fj-install-overlay';
+    overlay.id='fjInstallOverlay';
+    overlay.innerHTML='<div class="fj-install-card"><div class="fj-install-logo">💚</div><h2>Finanzas <span>Jóvenes</span></h2><p>Aprende a manejar tu dinero de forma fácil, practica con herramientas y lleva tus metas contigo.</p><div class="fj-install-actions"><button class="fj-install-main" id="fjInstallChoiceButton">📲 Instalar aplicación</button><button class="fj-install-web" id="fjContinueWeb">🌐 Continuar en la página</button></div></div>';
+    document.body.appendChild(overlay);
+    const close=()=>{overlay.remove();};
+    document.getElementById('fjContinueWeb').addEventListener('click',close);
+    window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+    document.getElementById('fjInstallChoiceButton').addEventListener('click',async()=>{
+      if(!deferredPrompt){close();return;}
+      try{await deferredPrompt.prompt();await deferredPrompt.userChoice;markInstalled();}catch(e){}
+      deferredPrompt=null;
+      close();
+    });
+    window.addEventListener('appinstalled',()=>{markInstalled();close();},{once:true});
+  }
   function setupPWA(){if(!document.querySelector('link[rel="manifest"]')){const link=document.createElement('link');link.rel='manifest';link.href='manifest.json';document.head.appendChild(link);}if(!document.querySelector('meta[name="theme-color"]')){const meta=document.createElement('meta');meta.name='theme-color';meta.content='#39ff88';document.head.appendChild(meta);}if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
   function init(){loadEditorialStyle();addStyles();setupPWA();loadNotifications();setupNav();setupAuthWatcher();removeGames();setTimeout(observeSections,300);setTimeout(setupInstallExperience,0);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
