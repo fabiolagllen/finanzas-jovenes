@@ -1,13 +1,17 @@
-const CACHE_NAME = 'finanzas-jovenes-v10';
+const CACHE_NAME = 'finanzas-jovenes-v11';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
   './mobile-app.js',
+  './profile-menu-sync.js',
+  './menu-fix-loader.js',
+  './supabase.js',
   './notifications.js',
   './payments.js',
-  './profile.js'
+  './profile.js',
+  './reminders-menu.js'
 ];
 
 self.addEventListener('install', event => {
