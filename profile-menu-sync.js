@@ -1,4 +1,4 @@
-/* Finanzas Jóvenes — navegación única compartida */
+/* Finanzas Jóvenes — menú único compartido para Inicio y Perfil */
 (function(){
   'use strict';
 
@@ -10,6 +10,17 @@
     {id:'perfil',icon:'👤',label:'Perfil',href:'./profile.html'},
     {id:'pagos',icon:'🔔',label:'Recordatorios',href:'./index.html#pagos'}
   ];
+
+  function currentId(){
+    const path=location.pathname.toLowerCase();
+    if(path.endsWith('/profile.html') || path.endsWith('/profile')) return 'perfil';
+    const hash=location.hash.toLowerCase();
+    if(hash==='#aprende') return 'aprende';
+    if(hash==='#herramientas') return 'herramientas';
+    if(hash==='#panel') return 'panel';
+    if(hash==='#pagos') return 'pagos';
+    return 'inicio';
+  }
 
   function styles(){
     if(document.getElementById('fjSharedDesktopMenu')) return;
@@ -25,7 +36,6 @@
       header nav .fj-menu-links a{position:relative!important;display:flex!important;align-items:center!important;color:#cbd7d0!important;text-decoration:none!important;margin:0!important;padding:12px 13px!important;border-radius:15px!important;font-size:.91rem!important;font-weight:700!important;transition:.22s!important;border:1px solid rgba(255,255,255,.025)!important;background:rgba(255,255,255,.018)!important;box-shadow:0 5px 14px rgba(0,0,0,.10)!important}
       header nav .fj-menu-links a:hover{color:#39ff88!important;background:rgba(57,255,136,.105)!important;border-color:rgba(57,255,136,.20)!important;box-shadow:0 9px 24px rgba(0,0,0,.22),0 0 16px rgba(57,255,136,.05)!important;transform:translateX(4px)!important}
       header nav .fj-menu-links a.active{color:#39ff88!important;background:rgba(57,255,136,.105)!important;border-color:rgba(57,255,136,.20)!important}
-      /* El acceso/salida queda separado y pegado al fondo del menú de escritorio. */
       header nav .fj-menu-user{display:flex!important;flex-direction:column!important;gap:9px!important;margin-top:auto!important;padding-top:18px!important}
       header nav .fj-menu-user button{width:100%!important;border:0!important;background:rgba(23,37,29,.92)!important;color:#39ff88!important;padding:10px 15px!important;border-radius:15px!important;font-weight:800!important;cursor:pointer!important;border:1px solid #355440!important}
       @media(max-width:900px){
@@ -39,6 +49,12 @@
       @media(max-width:380px){.fj-mobile-nav{left:6px!important;right:6px!important;bottom:6px!important;height:65px!important}.fj-mobile-nav button{font-size:.57rem!important}.fj-mobile-nav button span{font-size:1.05rem!important}}
     `;
     document.head.appendChild(s);
+  }
+
+  function setActive(){
+    const activeId=currentId();
+    document.querySelectorAll('[data-menu-id]').forEach(el=>el.classList.toggle('active',el.dataset.menuId===activeId));
+    document.querySelectorAll('.fj-mobile-nav [data-target]').forEach(el=>el.classList.toggle('active',el.dataset.target===activeId));
   }
 
   function build(){
@@ -56,7 +72,6 @@
         a.href=item.href;
         a.dataset.menuId=item.id;
         a.textContent=item.icon+' '+item.label;
-        if(item.id==='perfil') a.classList.add('active');
         links.appendChild(a);
       });
 
@@ -71,16 +86,24 @@
     }
 
     let mobile=document.querySelector('.fj-mobile-nav');
-    if(!mobile){mobile=document.createElement('nav');mobile.className='fj-mobile-nav';mobile.setAttribute('aria-label','Navegación móvil');document.body.appendChild(mobile)}
+    if(!mobile){
+      mobile=document.createElement('nav');
+      mobile.className='fj-mobile-nav';
+      mobile.setAttribute('aria-label','Navegación móvil');
+      document.body.appendChild(mobile);
+    }
     mobile.replaceChildren();
     ITEMS.forEach(item=>{
       const b=document.createElement('button');
-      b.type='button';b.dataset.target=item.id;
+      b.type='button';
+      b.dataset.target=item.id;
       b.innerHTML='<span>'+item.icon+'</span>'+item.label;
-      if(item.id==='perfil')b.classList.add('active');
       b.addEventListener('click',()=>location.href=item.href);
       mobile.appendChild(b);
     });
+
+    setActive();
+    window.addEventListener('hashchange',setActive);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build,{once:true});else build();
