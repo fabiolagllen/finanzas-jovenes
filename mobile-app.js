@@ -36,6 +36,68 @@
     s.id='fjMobileStyles';
     s.textContent=`
       .fj-mobile-nav{display:none}
+
+      /* Bienvenida inicial para instalación de la app */
+      .fj-install-overlay{
+        position:fixed!important;
+        inset:0!important;
+        width:100vw!important;
+        height:100vh!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        padding:20px!important;
+        background:rgba(0,0,0,.78)!important;
+        backdrop-filter:blur(9px)!important;
+        -webkit-backdrop-filter:blur(9px)!important;
+        z-index:99999!important;
+        overflow:auto!important;
+      }
+      .fj-install-card{
+        width:min(430px,100%)!important;
+        margin:auto!important;
+        padding:32px 28px!important;
+        border-radius:28px!important;
+        background:linear-gradient(145deg,#13291b,#07100b)!important;
+        border:1px solid rgba(57,255,136,.28)!important;
+        box-shadow:0 30px 100px rgba(0,0,0,.72),0 0 45px rgba(57,255,136,.10)!important;
+        text-align:center!important;
+        color:#f4faf6!important;
+        position:relative!important;
+      }
+      .fj-install-logo{
+        width:72px!important;
+        height:72px!important;
+        margin:0 auto 16px!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        border-radius:22px!important;
+        background:rgba(57,255,136,.09)!important;
+        border:1px solid rgba(57,255,136,.22)!important;
+        font-size:2.2rem!important;
+        box-shadow:0 0 30px rgba(57,255,136,.08)!important;
+      }
+      .fj-install-card h2{font-size:1.8rem!important;margin:0 0 8px!important;letter-spacing:-.8px!important}
+      .fj-install-card h2 span{color:#39ff88!important}
+      .fj-install-card>p{color:#9eafa5!important;font-size:.94rem!important;line-height:1.6!important;margin:0 auto 23px!important;max-width:340px!important}
+      .fj-install-actions{display:grid!important;gap:10px!important}
+      .fj-install-actions button{
+        width:100%!important;
+        border-radius:14px!important;
+        padding:14px 16px!important;
+        font-size:.95rem!important;
+        font-weight:800!important;
+        cursor:pointer!important;
+        transition:.2s!important;
+      }
+      .fj-install-main{background:#39ff88!important;color:#041008!important;border:1px solid #39ff88!important}
+      .fj-install-main:hover{transform:translateY(-2px)!important;box-shadow:0 10px 28px rgba(57,255,136,.20)!important}
+      .fj-install-web{background:rgba(255,255,255,.035)!important;color:#dce9e1!important;border:1px solid rgba(255,255,255,.10)!important}
+      .fj-install-web:hover{background:rgba(57,255,136,.06)!important;border-color:rgba(57,255,136,.20)!important}
+      .fj-install-help{display:none!important;margin-top:14px!important;padding:12px!important;border-radius:12px!important;background:rgba(255,226,122,.06)!important;border:1px solid rgba(255,226,122,.16)!important;color:#ffe7a0!important;font-size:.78rem!important;line-height:1.5!important;text-align:left!important}
+      .fj-install-help.show{display:block!important}
+
       @media(max-width:900px){
         body{padding-left:0!important;padding-bottom:86px!important}
         body:before{background-size:34px 34px}
@@ -64,8 +126,17 @@
         .cta{padding:38px 18px!important;border-radius:20px!important}
         footer{padding-bottom:24px!important}
         #fjChatbot,#fjChatbotButton{bottom:88px!important}
+        .fj-install-card{padding:29px 22px!important;border-radius:25px!important}
       }
-      @media(max-width:380px){.fj-mobile-nav{left:6px;right:6px}.fj-mobile-nav button{font-size:.57rem}.fj-mobile-nav button span{font-size:1.08rem}.hero-visual{min-height:340px}.hero-visual .float-card{max-width:112px!important;font-size:.63rem!important}}
+      @media(max-width:380px){
+        .fj-mobile-nav{left:6px;right:6px}
+        .fj-mobile-nav button{font-size:.57rem}
+        .fj-mobile-nav button span{font-size:1.08rem}
+        .hero-visual{min-height:340px}
+        .hero-visual .float-card{max-width:112px!important;font-size:.63rem!important}
+        .fj-install-card{padding:25px 18px!important}
+        .fj-install-logo{width:62px!important;height:62px!important;font-size:1.9rem!important}
+      }
     `;
     document.head.appendChild(s);
   }
@@ -126,6 +197,6 @@
     if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   }
 
-  function init(){loadEditorialStyle();addStyles();setupPWA();loadNotifications();setupNav();removeGames();setTimeout(observeSections,300);setTimeout(setupInstallExperience,450);}
+  function init(){loadEditorialStyle();addStyles();setupPWA();loadNotifications();setupNav();removeGames();setTimeout(observeSections,300);setTimeout(setupInstallExperience,0);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
