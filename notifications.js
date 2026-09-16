@@ -1,214 +1,25 @@
-/* FinanJoven — alertas financieras + Web Push */
+/* FinanJoven — notificaciones internas con Supabase */
 (function(){
   'use strict';
-
   const SUPABASE_URL='https://pgfgmxeqisrwkrwtvbum.supabase.co';
   const SUPABASE_KEY='sb_publishable_6al9XSM0nTc6-RlkX2UUrw_SLaQdwEh';
-  const VAPID_PUBLIC_KEY='BGyqM2bOQwPoJp9fPKVh_qoY5_q43Zk7fwPQ2LFAcD2Fb4MWt0a8SoTd-z1W33b_rmCWD8eGppMS6ClyP_GTbN4';
-  const LAST_NOTICE_KEY='fjLastFinancialNotice';
-  const CHECK_INTERVAL=24*60*60*1000;
+  const TABLE='financial_notifications';
   let db=null;
-
-  function canNotify(){
-    return 'Notification' in window && 'serviceWorker' in navigator && window.isSecureContext;
-  }
-
-  async function getDb(){
-    if(db) return db;
-    try{
-      if(window.supabase && typeof window.supabase.createClient==='function'){
-        db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-      }
-    }catch(e){ console.warn('FinanJoven: no se pudo preparar alertas.',e); }
-    return db;
-  }
-
-  async function getUser(){
-    const client=await getDb();
-    if(!client) return null;
-    try{
-      const {data,error}=await client.auth.getUser();
-      if(error || !data || !data.user) return null;
-      return data.user;
-    }catch(e){ return null; }
-  }
-
-  function monthRange(){
-    const now=new Date();
-    const start=new Date(now.getFullYear(),now.getMonth(),1);
-    const next=new Date(now.getFullYear(),now.getMonth()+1,1);
-    const iso=d=>d.toISOString().slice(0,10);
-    return {start:iso(start),end:iso(next)};
-  }
-
-  async function countRows(table,userId,dateColumn){
-    const client=await getDb();
-    if(!client) return 0;
-    try{
-      let query=client.from(table).select('id',{count:'exact',head:true}).eq('user_id',userId);
-      if(dateColumn){
-        const r=monthRange();
-        query=query.gte(dateColumn,r.start).lt(dateColumn,r.end);
-      }
-      const {count,error}=await query;
-      if(error) return 0;
-      return Number(count||0);
-    }catch(e){ return 0; }
-  }
-
-  async function getFinancialStatus(userId){
-    const [expenses,budgets,goals]=await Promise.all([
-      countRows('expenses',userId,'expense_date'),
-      countRows('budgets',userId,null),
-      countRows('savings_goals',userId,null)
-    ]);
-    return {expenses,budgets,goals};
-  }
-
-  function shouldNotify(type){
-    try{
-      const saved=JSON.parse(localStorage.getItem(LAST_NOTICE_KEY)||'{}');
-      return !saved[type] || Date.now()-saved[type]>CHECK_INTERVAL;
-    }catch(e){ return true; }
-  }
-
-  function markNotified(type){
-    try{
-      const saved=JSON.parse(localStorage.getItem(LAST_NOTICE_KEY)||'{}');
-      saved[type]=Date.now();
-      localStorage.setItem(LAST_NOTICE_KEY,JSON.stringify(saved));
-    }catch(e){}
-  }
-
-  async function showNotice(title,body,type){
-    if(!canNotify() || Notification.permission!=='granted' || !shouldNotify(type)) return false;
-    try{
-      const registration=await navigator.serviceWorker.ready;
-      await registration.showNotification(title,{body,icon:'./icon.svg',badge:'./icon.svg',tag:'finanjoven-'+type,renotify:false,data:{url:'./#panel'}});
-      markNotified(type);
-      return true;
-    }catch(e){
-      console.warn('FinanJoven: no se pudo mostrar la alerta.',e);
-      return false;
-    }
-  }
-
-  function urlBase64ToUint8Array(base64String){
-    const padding='='.repeat((4-base64String.length%4)%4);
-    const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
-    const rawData=atob(base64);
-    return Uint8Array.from([...rawData].map(char=>char.charCodeAt(0)));
-  }
-
-  async function subscribeToPush(){
-    if(!canNotify() || Notification.permission!=='granted' || !('PushManager' in window)) return false;
-    const user=await getUser();
-    if(!user) return false;
-    try{
-      const registration=await navigator.serviceWorker.ready;
-      let subscription=await registration.pushManager.getSubscription();
-      if(!subscription){
-        subscription=await registration.pushManager.subscribe({
-          userVisibleOnly:true,
-          applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
-      }
-      const json=subscription.toJSON();
-      const endpoint=json.endpoint;
-      const p256dh=json.keys && json.keys.p256dh;
-      const auth=json.keys && json.keys.auth;
-      if(!endpoint || !p256dh || !auth) return false;
-      const client=await getDb();
-      if(!client) return false;
-      const {error}=await client.from('push_subscriptions').upsert({
-        user_id:user.id,
-        endpoint,
-        p256dh,
-        auth,
-        user_agent:navigator.userAgent,
-        updated_at:new Date().toISOString()
-      },{onConflict:'endpoint'});
-      if(error){
-        console.warn('FinanJoven: no se pudo guardar la suscripción push.',error);
-        return false;
-      }
-      return true;
-    }catch(e){
-      console.warn('FinanJoven: no se pudo activar Web Push.',e);
-      return false;
-    }
-  }
-
-  async function requestPermission(){
-    if(!canNotify()) return 'unsupported';
-    if(Notification.permission==='granted'){
-      await subscribeToPush();
-      return 'granted';
-    }
-    if(Notification.permission==='denied') return 'denied';
-    try{
-      const result=await Notification.requestPermission();
-      if(result==='granted') await subscribeToPush();
-      return result;
-    }catch(e){return 'denied';}
-  }
-
-  function createButton(){
-    if(document.getElementById('fjNotificationButton')) return;
-    if(!canNotify()) return;
-    const style=document.createElement('style');
-    style.textContent=`#fjNotificationButton{position:fixed;right:22px;bottom:95px;z-index:9997;width:48px;height:48px;border:1px solid rgba(57,255,136,.28);border-radius:50%;background:rgba(9,18,12,.92);color:#39ff88;box-shadow:0 10px 30px #0009;cursor:pointer;font-size:21px;backdrop-filter:blur(12px);transition:.2s}#fjNotificationButton:hover{transform:translateY(-2px);border-color:rgba(57,255,136,.55);box-shadow:0 13px 35px #000b,0 0 18px rgba(57,255,136,.12)}@media(max-width:900px){#fjNotificationButton{right:17px;bottom:145px;width:46px;height:46px}}`;
-    document.head.appendChild(style);
-    const button=document.createElement('button');
-    button.id='fjNotificationButton';
-    button.type='button';
-    button.title='Activar recordatorios';
-    button.setAttribute('aria-label','Activar recordatorios de FinanJoven');
-    button.textContent='🔔';
-    button.addEventListener('click',async()=>{
-      const result=await requestPermission();
-      if(result==='granted'){
-        button.textContent='🔔';
-        button.title='Recordatorios activos';
-        await checkFinancialStatus(true);
-      }else if(result==='denied'){
-        button.textContent='🔕';
-        button.title='Notificaciones bloqueadas por el navegador';
-      }
-    });
-    document.body.appendChild(button);
-    updateButton();
-  }
-
-  function updateButton(){
-    const button=document.getElementById('fjNotificationButton');
-    if(!button) return;
-    if(Notification.permission==='granted'){button.textContent='🔔';button.title='Recordatorios activos';}
-    else if(Notification.permission==='denied'){button.textContent='🔕';button.title='Notificaciones bloqueadas por el navegador';}
-    else{button.textContent='🔔';button.title='Activar recordatorios';}
-  }
-
-  async function checkFinancialStatus(force){
-    if(!canNotify() || Notification.permission!=='granted') return;
-    if(!force && !shouldNotify('daily-check')) return;
-    const user=await getUser();
-    if(!user) return;
-    const status=await getFinancialStatus(user.id);
-    if(status.expenses===0) await showNotice('💚 FinanJoven','Aún no has registrado gastos de este mes. Llevarlos al día te ayudará a conocer mejor en qué utilizas tu dinero.','expenses');
-    else if(status.budgets===0) await showNotice('📊 FinanJoven','Todavía no tienes un presupuesto guardado. Puedes crear uno para organizar mejor tus ingresos y gastos.','budget');
-    else if(status.goals===0) await showNotice('🎯 FinanJoven','Aún no tienes una meta de ahorro guardada. Crear una meta puede ayudarte a darle un objetivo a tu ahorro.','goal');
-    markNotified('daily-check');
-  }
-
-  async function init(){
-    if(!canNotify()) return;
-    createButton();
-    updateButton();
-    if(Notification.permission==='granted'){
-      setTimeout(()=>{subscribeToPush();checkFinancialStatus(false);},1800);
-    }
-  }
-
-  window.FinanJovenNotifications={requestPermission,checkFinancialStatus,updateButton,subscribeToPush};
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  async function getDb(){if(db)return db;try{if(window.supabase&&typeof window.supabase.createClient==='function')db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){console.warn('FinanJoven: no se pudo preparar notificaciones.',e);}return db;}
+  async function getUser(){const c=await getDb();if(!c)return null;try{const {data,error}=await c.auth.getUser();return error||!data?.user?null:data.user;}catch(e){return null;}}
+  function addStyles(){if(document.getElementById('fjNotificationsStyle'))return;const s=document.createElement('style');s.id='fjNotificationsStyle';s.textContent=`#fjNotificationButton{position:fixed;right:22px;bottom:95px;z-index:9997;width:48px;height:48px;border:1px solid rgba(57,255,136,.28);border-radius:50%;background:rgba(9,18,12,.94);color:#39ff88;box-shadow:0 10px 30px #0009;cursor:pointer;font-size:21px;backdrop-filter:blur(12px);transition:.2s}#fjNotificationButton:hover{transform:translateY(-2px);border-color:rgba(57,255,136,.55)}#fjNotificationBadge{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:20px;background:#ff6978;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #09120c}#fjNotificationPanel{position:fixed;right:22px;bottom:153px;width:min(370px,calc(100vw - 34px));max-height:480px;z-index:9996;background:rgba(9,18,12,.98);border:1px solid #31503d;border-radius:20px;box-shadow:0 25px 70px #000b;overflow:hidden;display:none}#fjNotificationPanel.show{display:block}.fj-not-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #294034}.fj-not-head strong{font-size:1rem}.fj-not-head button{border:0;background:transparent;color:#39ff88;cursor:pointer;font-weight:800;font-size:.78rem}.fj-not-list{max-height:390px;overflow:auto}.fj-not-empty{padding:28px 20px;text-align:center;color:#9eafa5;font-size:.9rem}.fj-not-item{padding:15px 18px;border-bottom:1px solid rgba(41,64,52,.65);cursor:pointer}.fj-not-item:hover{background:#ffffff06}.fj-not-item.unread{background:rgba(57,255,136,.045)}.fj-not-title{font-weight:800;color:#f4faf6;margin-bottom:3px}.fj-not-body{font-size:.85rem;color:#9eafa5;line-height:1.45}.fj-not-time{font-size:.72rem;color:#718078;margin-top:7px}@media(max-width:900px){#fjNotificationButton{right:17px;bottom:145px;width:46px;height:46px}#fjNotificationPanel{right:17px;bottom:200px}}`;document.head.appendChild(s);}
+  function createUI(){addStyles();if(document.getElementById('fjNotificationButton'))return;const b=document.createElement('button');b.id='fjNotificationButton';b.type='button';b.title='Notificaciones';b.setAttribute('aria-label','Abrir notificaciones');b.innerHTML='🔔<span id="fjNotificationBadge" style="display:none">0</span>';b.onclick=async()=>{const p=document.getElementById('fjNotificationPanel');p?.classList.toggle('show');if(p?.classList.contains('show'))await loadNotifications();};document.body.appendChild(b);const p=document.createElement('div');p.id='fjNotificationPanel';p.innerHTML='<div class="fj-not-head"><strong>🔔 Notificaciones</strong><button id="fjMarkAllRead" type="button">Marcar todo leído</button></div><div id="fjNotificationList" class="fj-not-list"><div class="fj-not-empty">Cargando...</div></div>';document.body.appendChild(p);document.getElementById('fjMarkAllRead').onclick=markAllRead;}
+  function escapeHtml(t){return String(t??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function timeText(v){try{const d=new Date(v),diff=Math.max(0,Date.now()-d),m=Math.floor(diff/60000),h=Math.floor(diff/3600000),days=Math.floor(diff/86400000);if(m<1)return'Ahora';if(m<60)return`Hace ${m} min`;if(h<24)return`Hace ${h} h`;if(days===1)return'Ayer';if(days<7)return`Hace ${days} días`;return d.toLocaleDateString('es-GT');}catch(e){return'';}}
+  function updateBadge(n){const b=document.getElementById('fjNotificationBadge');if(!b)return;b.textContent=n>99?'99+':String(n);b.style.display=n?'flex':'none';}
+  async function loadNotifications(){const list=document.getElementById('fjNotificationList');if(!list)return;const user=await getUser();if(!user){list.innerHTML='<div class="fj-not-empty">Inicia sesión para ver tus notificaciones.</div>';updateBadge(0);return;}const c=await getDb();if(!c)return;const {data,error}=await c.from(TABLE).select('id,title,body,type,read,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(30);if(error){list.innerHTML='<div class="fj-not-empty">No se pudieron cargar las notificaciones.</div>';return;}if(!data?.length){list.innerHTML='<div class="fj-not-empty">✨ No tienes notificaciones nuevas.</div>';updateBadge(0);return;}updateBadge(data.filter(n=>!n.read).length);list.innerHTML=data.map(n=>`<div class="fj-not-item ${n.read?'':'unread'}" data-id="${n.id}"><div class="fj-not-title">${escapeHtml(n.title)}</div><div class="fj-not-body">${escapeHtml(n.body)}</div><div class="fj-not-time">${timeText(n.created_at)}</div></div>`).join('');list.querySelectorAll('.fj-not-item').forEach(x=>x.onclick=()=>markRead(x.dataset.id));}
+  async function markRead(id){const u=await getUser(),c=await getDb();if(!u||!c||!id)return;await c.from(TABLE).update({read:true}).eq('id',id).eq('user_id',u.id);await loadNotifications();}
+  async function markAllRead(){const u=await getUser(),c=await getDb();if(!u||!c)return;await c.from(TABLE).update({read:true}).eq('user_id',u.id).eq('read',false);await loadNotifications();}
+  function monthRange(){const n=new Date(),s=new Date(n.getFullYear(),n.getMonth(),1),e=new Date(n.getFullYear(),n.getMonth()+1,1),iso=d=>d.toISOString().slice(0,10);return{start:iso(s),end:iso(e)};}
+  async function countRows(table,userId,dateColumn){const c=await getDb();if(!c)return 0;let q=c.from(table).select('id',{count:'exact',head:true}).eq('user_id',userId);if(dateColumn){const r=monthRange();q=q.gte(dateColumn,r.start).lt(dateColumn,r.end);}const {count,error}=await q;return error?0:Number(count||0);}
+  async function createIfMissing(userId,title,body,type){const c=await getDb();if(!c)return;const since=new Date();since.setHours(0,0,0,0);const {data}=await c.from(TABLE).select('id').eq('user_id',userId).eq('type',type).gte('created_at',since.toISOString()).limit(1);if(!data?.length)await c.from(TABLE).insert({user_id:userId,title,body,type});}
+  async function checkFinancialStatus(){const u=await getUser();if(!u)return;const [expenses,budgets,goals]=await Promise.all([countRows('expenses',u.id,'expense_date'),countRows('budgets',u.id,null),countRows('savings_goals',u.id,null)]);if(expenses===0)await createIfMissing(u.id,'💚 Registra tus gastos','Aún no has registrado gastos de este mes. Llevarlos al día te ayudará a conocer mejor en qué utilizas tu dinero.','expenses');if(budgets===0)await createIfMissing(u.id,'📊 Crea un presupuesto','Todavía no tienes un presupuesto guardado. Puedes crear uno para organizar mejor tus ingresos y gastos.','budget');if(goals===0)await createIfMissing(u.id,'🎯 Crea una meta de ahorro','Aún no tienes una meta de ahorro guardada. Crear una meta puede ayudarte a darle un objetivo a tu ahorro.','goal');await loadNotifications();}
+  async function init(){createUI();setTimeout(checkFinancialStatus,1200);}
+  window.FinanJovenNotifications={checkFinancialStatus,loadNotifications,markAllRead};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
