@@ -23,3 +23,12 @@
   window.FinanJovenNotifications={checkFinancialStatus,loadNotifications,markAllRead};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+/* Cargar el módulo de perfil después de que la aplicación móvil cargue sus módulos */
+(function(){
+  if(document.querySelector('script[data-fj-profile]'))return;
+  const script=document.createElement('script');
+  script.src='./profile.js?v=1';
+  script.dataset.fjProfile='true';
+  document.head.appendChild(script);
+})();
