@@ -7,4 +7,8 @@
   const pwa=document.createElement('script');
   pwa.src='pwa.js';
   document.body.appendChild(pwa);
+
+  const reminders=document.createElement('script');
+  reminders.src='reminders-menu.js?v=1';
+  document.body.appendChild(reminders);
 })();
