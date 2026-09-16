@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#39ff88">
+<title>Mi perfil — Finanzas Jóvenes</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#050806;color:#f4faf6;font-family:Arial,sans-serif;padding:24px}body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 0%,rgba(57,255,136,.10),transparent 42%)}.wrap{width:min(720px,100%);margin:0 auto;position:relative}.back{display:inline-flex;align-items:center;gap:8px;color:#9eafa5;text-decoration:none;margin-bottom:22px;font-weight:700}.back:hover{color:#39ff88}.card{background:linear-gradient(145deg,#13251a,#07100b);border:1px solid rgba(57,255,136,.25);border-radius:28px;padding:30px;box-shadow:0 25px 80px rgba(0,0,0,.5)}.head{text-align:center;border-bottom:1px solid #294034;padding-bottom:24px}.avatar{width:110px;height:110px;border-radius:50%;margin:0 auto 14px;background:#0d2116;border:2px solid #39ff88;color:#39ff88;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:900;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.head h1{margin:0;font-size:2rem}.email{color:#9eafa5;margin-top:7px;font-size:.9rem;word-break:break-word}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}.field.full{grid-column:1/-1}.field label{display:block;color:#9eafa5;font-size:.82rem;font-weight:700;margin-bottom:7px}.field input,.field textarea{width:100%;border:1px solid #294034;border-radius:13px;background:#09110c;color:#f4faf6;padding:13px;font:inherit;outline:none}.field input:focus,.field textarea:focus{border-color:#39ff88;box-shadow:0 0 0 3px rgba(57,255,136,.08)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}.btn{border:0;border-radius:13px;padding:14px;font-weight:800;cursor:pointer}.save{background:#39ff88;color:#041008}.logout{background:#17221b;color:#dce9e1;border:1px solid #294034}.msg{margin-top:14px;padding:11px 13px;border-radius:12px;display:none;font-size:.88rem}.msg.show{display:block}.ok{background:#0c2416;color:#8fffb5;border:1px solid #28553a}.err{background:#2a1212;color:#ffaaa8;border:1px solid #5c2929}.info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.info div{padding:14px;border:1px solid #294034;border-radius:14px;background:#0a110d}.info span{display:block;color:#718078;font-size:.76rem}.info strong{display:block;color:#39ff88;margin-top:4px}.loading{text-align:center;padding:50px;color:#9eafa5}@media(max-width:600px){body{padding:14px}.card{padding:21px;border-radius:22px}.grid,.actions,.info{grid-template-columns:1fr}.field.full{grid-column:auto}.head h1{font-size:1.65rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">← Volver a Finanzas Jóvenes</a>
+<div class="card" id="profileCard"><div class="loading">Cargando tu perfil...</div></div>
+</div>
+<script>
+const SUPABASE_URL='https://pgfgmxeqisrwkrwtvbum.supabase.co';
+const SUPABASE_KEY='sb_publishable_6al9XSM0nTc6-RlkX2UUrw_SLaQdwEh';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user=null;
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function initial(name){return (name||user?.email?.split('@')[0]||'U').trim().slice(0,1).toUpperCase();}
+async function load(){const {data,error}=await db.auth.getUser();if(error||!data.user){location.href='index.html';return}user=data.user;const {data:p}=await db.from('profiles').select('full_name,nickname,bio,avatar_url').eq('id',user.id).maybeSingle();render(p||{});}
+function render(p){const display=p.nickname||p.full_name||user.email?.split('@')[0]||'Mi perfil';document.getElementById('profileCard').innerHTML=`<div class="head"><div class="avatar" id="avatar">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="Foto de perfil">`:initial(display)}</div><h1 id="title">${esc(display)}</h1><div class="email">${esc(user.email||'')}</div></div><div class="grid"><div class="field"><label for="name">Nombre</label><input id="name" maxlength="80" value="${esc(p.full_name)}" placeholder="Tu nombre"></div><div class="field"><label for="nickname">Apodo</label><input id="nickname" maxlength="30" value="${esc(p.nickname)}" placeholder="¿Cómo quieres que te llamemos?"></div><div class="field full"><label for="bio">Sobre mí</label><textarea id="bio" maxlength="180" rows="4" placeholder="Escribe algo sobre ti...">${esc(p.bio)}</textarea></div></div><div class="msg" id="msg"></div><div class="actions"><button class="btn save" id="save">Guardar cambios 💾</button><button class="btn logout" id="logout">Cerrar sesión 🚪</button></div><div class="info"><div><span>Cuenta</span><strong>Activa</strong></div><div><span>Privacidad</span><strong>Solo tú</strong></div></div>`;document.getElementById('save').onclick=save;document.getElementById('logout').onclick=logout;}
+async function save(){const msg=document.getElementById('msg');const full_name=document.getElementById('name').value.trim();const nickname=document.getElementById('nickname').value.trim();const bio=document.getElementById('bio').value.trim();const {error}=await db.from('profiles').upsert({id:user.id,full_name,nickname,bio,updated_at:new Date().toISOString()},{onConflict:'id'});if(error){msg.textContent='No se pudieron guardar los cambios.';msg.className='msg show err';return}const display=nickname||full_name||user.email?.split('@')[0]||'Mi perfil';document.getElementById('title').textContent=display;document.getElementById('avatar').textContent=initial(display);msg.textContent='Perfil actualizado correctamente. 💚';msg.className='msg show ok';setTimeout(()=>msg.className='msg',2500);}
+async function logout(){await db.auth.signOut();location.href='index.html';}
+load();
+</script>
+</body>
+</html>
