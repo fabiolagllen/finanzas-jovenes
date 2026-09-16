@@ -22,6 +22,24 @@
     return 'inicio';
   }
 
+  function navigate(href){
+    const url=new URL(href,location.href);
+    const samePage=url.pathname===location.pathname;
+    if(samePage && url.hash){
+      if(location.hash!==url.hash) location.hash=url.hash;
+      else document.getElementById(url.hash.slice(1))?.scrollIntoView({behavior:'smooth',block:'start'});
+      setActive();
+      return;
+    }
+    if(samePage && !url.hash){
+      window.scrollTo({top:0,behavior:'smooth'});
+      history.replaceState(null,'',url.pathname);
+      setActive();
+      return;
+    }
+    location.href=href;
+  }
+
   function styles(){
     if(document.getElementById('fjSharedDesktopMenu')) return;
     const s=document.createElement('style');
@@ -117,10 +135,12 @@
     const section=document.createElement('section');
     section.id='pagos';
     section.className='fj-reminders';
-    section.innerHTML=`<div class="fj-reminder-card"><h2>🔔 Mis recordatorios</h2><p>Ten presentes tus pagos y revisiones para mantener tus finanzas organizadas.</p><div class="fj-reminder-grid"><div class="fj-reminder"><strong>📅 Revisa tus gastos</strong><span>Haz una revisión al menos una vez por semana.</span></div><div class="fj-reminder"><strong>💰 Revisa tus metas</strong><span>Comprueba cuánto llevas ahorrado y qué te falta.</span></div><div class="fj-reminder"><strong>🧾 Registra tus pagos</strong><span>Anota cada gasto importante para no perder el control.</span></div><div class="fj-reminder"><strong>🔎 Revisa antes de comprar</strong><span>Piensa si la compra está dentro de tu presupuesto.</span></div></div><div class="fj-reminder-action"><button type="button" onclick="location.hash='herramientas'">Ir a Finanzas</button><button type="button" class="secondary" onclick="location.hash='panel'">Ver mi panel</button></div></div>`;
+    section.innerHTML=`<div class="fj-reminder-card"><h2>🔔 Mis recordatorios</h2><p>Ten presentes tus pagos y revisiones para mantener tus finanzas organizadas.</p><div class="fj-reminder-grid"><div class="fj-reminder"><strong>📅 Revisa tus gastos</strong><span>Haz una revisión al menos una vez por semana.</span></div><div class="fj-reminder"><strong>💰 Revisa tus metas</strong><span>Comprueba cuánto llevas ahorrado y qué te falta.</span></div><div class="fj-reminder"><strong>🧾 Registra tus pagos</strong><span>Anota cada gasto importante para no perder el control.</span></div><div class="fj-reminder"><strong>🔎 Revisa antes de comprar</strong><span>Piensa si la compra está dentro de tu presupuesto.</span></div></div><div class="fj-reminder-action"><button type="button" onclick="navigateToSection('herramientas')">Ir a Finanzas</button><button type="button" class="secondary" onclick="navigateToSection('panel')">Ver mi panel</button></div></div>`;
     const cta=main.querySelector('.cta')?.closest('section');
     if(cta)main.insertBefore(section,cta);else main.appendChild(section);
   }
+
+  window.navigateToSection=function(id){navigate('./index.html#'+id)};
 
   function build(){
     styles();
@@ -131,12 +151,12 @@
     if(!nav){nav=document.createElement('nav');header.replaceChildren(nav)}
     const logo=document.createElement('div');logo.className='fj-shared-logo';logo.innerHTML='Finanzas<span>Jóvenes</span>';
     const links=document.createElement('div');links.className='fj-menu-links';
-    ITEMS.forEach(item=>{const a=document.createElement('a');a.href=item.href;a.dataset.menuId=item.id;a.textContent=item.icon+' '+item.label;links.appendChild(a)});
+    ITEMS.forEach(item=>{const a=document.createElement('a');a.href=item.href;a.dataset.menuId=item.id;a.textContent=item.icon+' '+item.label;a.addEventListener('click',e=>{const url=new URL(item.href,location.href);if(url.pathname===location.pathname){e.preventDefault();navigate(item.href)}});links.appendChild(a)});
     const user=document.createElement('div');user.className='fj-menu-user';
     const auth=document.createElement('button');auth.type='button';user.appendChild(auth);nav.replaceChildren(logo,links,user);
     let mobile=document.querySelector('.fj-mobile-nav');
     if(!mobile){mobile=document.createElement('nav');mobile.className='fj-mobile-nav';mobile.setAttribute('aria-label','Navegación móvil');document.body.appendChild(mobile)}
-    mobile.replaceChildren();ITEMS.forEach(item=>{const b=document.createElement('button');b.type='button';b.dataset.target=item.id;b.innerHTML='<span>'+item.icon+'</span>'+item.label;b.addEventListener('click',()=>location.href=item.href);mobile.appendChild(b)});
+    mobile.replaceChildren();ITEMS.forEach(item=>{const b=document.createElement('button');b.type='button';b.dataset.target=item.id;b.innerHTML='<span>'+item.icon+'</span>'+item.label;b.addEventListener('click',()=>navigate(item.href));mobile.appendChild(b)});
     setActive();updateAuthButton(null);ensureReminders();syncAuth();
   }
 
