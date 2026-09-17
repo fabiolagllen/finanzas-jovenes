@@ -38,6 +38,8 @@
       body>header .fj-menu-links{display:flex!important;flex-direction:column!important;gap:8px!important}
       body>header .fj-menu-links a{display:flex!important;align-items:center!important;color:#665D63!important;text-decoration:none!important;margin:0!important;padding:12px 13px!important;border-radius:15px!important;font-size:.91rem!important;font-weight:700!important;transition:.22s!important;border:1px solid transparent!important;background:transparent!important;box-shadow:none!important}
       body>header .fj-menu-links a:hover,body>header .fj-menu-links a.active{color:#7A1F3D!important;background:#F8EEF1!important;border-color:#E4CDD5!important;box-shadow:0 7px 18px rgba(84,21,43,.06)!important}
+      body>header .fj-back-home{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;margin-top:0!important;padding:10px 12px!important;border:1px solid #EADDE2!important;border-radius:13px!important;background:#FFFFFF!important;color:#6F6870!important;text-decoration:none!important;font-size:.82rem!important;font-weight:800!important;transition:.2s!important}
+      body>header .fj-back-home:hover{color:#7A1F3D!important;border-color:#CFAFBA!important;background:#F8EEF1!important}
       body>header .fj-menu-user{display:flex!important;flex-direction:column!important;gap:9px!important;margin-top:auto!important;padding-top:18px!important;border-top:1px solid #F0E5E9!important}
       body>header .fj-menu-user button{width:100%!important;background:#7A1F3D!important;color:#fff!important;padding:11px 15px!important;border-radius:15px!important;font-weight:800!important;cursor:pointer!important;border:1px solid #7A1F3D!important;box-shadow:0 10px 24px rgba(122,31,61,.18)!important}
       body>header .fj-menu-user button:hover{background:#54152B!important;border-color:#54152B!important}
@@ -54,7 +56,24 @@
   async function syncAuth(){const client=authClient();if(!client?.auth){updateAuthButton(null);return}try{const{data}=await client.auth.getSession();updateAuthButton(data?.session||null);client.auth.onAuthStateChange((_event,session)=>updateAuthButton(session))}catch(e){updateAuthButton(null)}}
   function forceRemindersHub(){if(isProfile())return;const load=()=>{const sec=document.getElementById('pagos');if(!sec)return;if(window.__fjRemindersHubBooted)delete window.__fjRemindersHubBooted;const old=document.querySelector('script[data-fj-reminders-force]');if(old)old.remove();const s=document.createElement('script');s.src='./reminders-hub.js?v=2&force='+Date.now();s.dataset.fjRemindersForce='true';document.body.appendChild(s)};setTimeout(load,900);setTimeout(load,2200)}
   window.navigateToSection=id=>goSection(id);
-  function build(){normalizeSectionOrder();loadWineTheme();styles();document.querySelectorAll('.fj-mobile-nav').forEach((el,i)=>{if(i>0)el.remove()});let header=document.body.querySelector(':scope>header');if(!header){header=document.createElement('header');document.body.prepend(header)}let nav=header.querySelector('nav');if(!nav){nav=document.createElement('nav');header.appendChild(nav)}const logo=document.createElement('div');logo.className='fj-shared-logo';logo.innerHTML='Finanzas<span>Jóvenes</span>';const links=document.createElement('div');links.className='fj-menu-links';ITEMS.forEach(item=>{const a=document.createElement('a');a.href=item.href;a.dataset.menuId=item.id;a.textContent=item.icon+' '+item.label;a.addEventListener('click',e=>{e.preventDefault();navigate(item.href)});links.appendChild(a)});const user=document.createElement('div');user.className='fj-menu-user';const auth=document.createElement('button');auth.type='button';user.appendChild(auth);nav.replaceChildren(logo,links,user);let mobile=document.querySelector('.fj-mobile-nav');if(!mobile){mobile=document.createElement('nav');mobile.className='fj-mobile-nav';document.body.appendChild(mobile)}mobile.replaceChildren();ITEMS.forEach(item=>{const b=document.createElement('button');b.type='button';b.dataset.target=item.id;b.innerHTML='<span>'+item.icon+'</span>'+item.label;b.addEventListener('click',()=>navigate(item.href));mobile.appendChild(b)});setActive();updateAuthButton(null);syncAuth();forceRemindersHub();window.__fjSharedMenuBooted=true;window.__fjSharedMenuStarting=false}
+  function build(){
+    normalizeSectionOrder();loadWineTheme();styles();
+    document.querySelectorAll('.fj-mobile-nav').forEach((el,i)=>{if(i>0)el.remove()});
+    let header=document.body.querySelector(':scope>header');if(!header){header=document.createElement('header');document.body.prepend(header)}
+    let nav=header.querySelector('nav');if(!nav){nav=document.createElement('nav');header.appendChild(nav)}
+    const logo=document.createElement('div');logo.className='fj-shared-logo';logo.innerHTML='Finanzas<span>Jóvenes</span>';
+    const links=document.createElement('div');links.className='fj-menu-links';
+    ITEMS.forEach(item=>{const a=document.createElement('a');a.href=item.href;a.dataset.menuId=item.id;a.textContent=item.icon+' '+item.label;a.addEventListener('click',e=>{e.preventDefault();navigate(item.href)});links.appendChild(a)});
+    const user=document.createElement('div');user.className='fj-menu-user';
+    const auth=document.createElement('button');auth.type='button';user.appendChild(auth);
+    nav.replaceChildren(logo,links,user);
+    if(isProfile()){
+      const back=document.createElement('a');back.className='fj-back-home';back.href='./index.html';back.innerHTML='← Volver al inicio';nav.insertBefore(back,user);
+    }
+    let mobile=document.querySelector('.fj-mobile-nav');if(!mobile){mobile=document.createElement('nav');mobile.className='fj-mobile-nav';document.body.appendChild(mobile)}
+    mobile.replaceChildren();ITEMS.forEach(item=>{const b=document.createElement('button');b.type='button';b.dataset.target=item.id;b.innerHTML='<span>'+item.icon+'</span>'+item.label;b.addEventListener('click',()=>navigate(item.href));mobile.appendChild(b)});
+    setActive();updateAuthButton(null);syncAuth();forceRemindersHub();window.__fjSharedMenuBooted=true;window.__fjSharedMenuStarting=false
+  }
   function start(){build();window.addEventListener('hashchange',setActive);window.addEventListener('popstate',setActive);const observer=new MutationObserver(()=>{const header=document.body.querySelector(':scope>header');const links=header?.querySelector('.fj-menu-links');const mobile=document.querySelector('.fj-mobile-nav');if(!header||!links||!mobile||links.children.length!==ITEMS.length)build()});observer.observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
