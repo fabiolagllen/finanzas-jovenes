@@ -12,7 +12,7 @@ const ITEMS=[
 ];
 function isProfile(){const p=location.pathname.toLowerCase();return p.endsWith('/profile.html')||p.endsWith('/profile')}
 function currentId(){if(isProfile())return'inicio';const h=location.hash.toLowerCase();if(h==='#aprende')return'aprende';if(h==='#herramientas')return'herramientas';if(h==='#panel')return'panel';if(h==='#pagos')return'pagos';return'inicio'}
-function normalizeSectionOrder(){if(isProfile())return;const main=document.querySelector('body>main');if(!main)return;const sections=ITEMS.map(item=>document.getElementById(item.id)).filter(Boolean);if(sections.length<2)return;sections.forEach(section=>main.appendChild(section))}
+function normalizeSectionOrder(){if(isProfile())return;const main=document.querySelector('body>main');if(!main)return;const sections=ITEMS.map(item=>document.getElementById(item.id)).filter(Boolean);if(sections.length<2)return;sections.forEach(section=>main.appendChild(section));const cta=main.querySelector('.cta')?.closest('section');if(cta)main.appendChild(cta)}
 function goSection(id){if(isProfile()){location.href='./index.html#'+id;return}const target=document.getElementById(id);if(!target)return;history.pushState(null,'','#'+id);target.scrollIntoView({behavior:'smooth',block:'start'});setActive()}
 function navigate(href){const hash=(href.split('#')[1]||'').trim();if(hash){goSection(hash);return}window.scrollTo({top:0,behavior:'smooth'});history.pushState(null,'',location.pathname);setActive()}
 function loadWineTheme(){if(document.getElementById('fjWineTheme'))return;const l=document.createElement('link');l.id='fjWineTheme';l.rel='stylesheet';l.href='./theme-wine.css?v=3';document.head.appendChild(l)}
