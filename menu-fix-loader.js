@@ -10,5 +10,4 @@
   load('profile-menu-sync.js?v=7');
   load('fix-games-menu.js?v=1');
   load('pwa.js?v=1');
-  load('reminders-menu.js?v=2');
 })();
