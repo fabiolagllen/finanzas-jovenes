@@ -1,0 +1,84 @@
+name: Aplicar identidad visual blanco y vino
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'theme-wine.css'
+      - 'index.html'
+      - 'perfil.html'
+      - 'profile.html'
+      - 'profile-menu-sync.js'
+      - 'mobile-app.js'
+      - 'reminders-hub.js'
+      - 'reminders-menu.js'
+      - 'notifications.js'
+      - 'payments.js'
+      - 'financial-helper.js'
+      - 'chatbot.js'
+      - 'editory-finan-style.css'
+
+permissions:
+  contents: write
+
+jobs:
+  theme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reemplazar colores antiguos
+        shell: python
+        run: |
+          from pathlib import Path
+          files = []
+          for p in Path('.').iterdir():
+              if p.suffix.lower() in {'.html','.css','.js','.json'} and p.name != 'theme-wine.css':
+                  files.append(p)
+          replacements = {
+              '#050806':'#FFFAF9', '#050806':'#FFFAF9',
+              '#0b120e':'#FFFFFF', '#101912':'#FFFFFF', '#152219':'#FFFAF9',
+              '#39ff88':'#7A1F3D', '#16c96b':'#54152B', '#b5ff63':'#A94B68',
+              '#f4faf6':'#292929', '#9eafa5':'#6F6870', '#8fa198':'#6F6870',
+              '#9db0a5':'#7B7379', '#dce9e1':'#554D53', '#cbd7d0':'#554D53',
+              '#294034':'#E6D7DD', '#355440':'#CFAFBA', '#316343':'#CFAFBA',
+              '#365943':'#CFAFBA', '#31503d':'#D8BEC8', '#31513e':'#D8BEC8',
+              '#041008':'#FFFFFF', '#0d2517':'#F6EAF0', '#132019':'#FFFAF9',
+              '#0d2116':'#F6EAF0', '#0c2416':'#F6EAF0', '#0c2517':'#F6EAF0',
+              '#09100c':'#FFFFFF', '#09110c':'#FFFFFF', '#0a110d':'#FFFFFF',
+              '#0a120d':'#FFFFFF', '#07100b':'#FFFAF9', '#08100b':'#FFFAF9',
+              '#08120c':'#FFFAF9', '#0e1b14':'#FFFFFF', '#07100b':'#FFFAF9',
+              '#17221b':'#F6F0F2', '#18251d':'#EADFE3', '#1a2920':'#EADFE3',
+              '#1b2b21':'#EADFE3', '#203329':'#E6D7DD', '#203a2b':'#E6D7DD',
+              '#2d4235':'#E6D7DD', '#28553a':'#CFAFBA', '#2a1212':'#FFF0F0',
+              '#5c2929':'#E4B2B2', '#603326':'#D8B8A6', '#27150f':'#FFF4ED',
+              '#718078':'#7B7379', '#83948a':'#7B7379', '#82938a':'#7B7379',
+              '#8fffb5':'#54152B', '#91ffb5':'#54152B', '#a9ffc4':'#54152B',
+              '#baffcf':'#54152B', '#c7d6ce':'#554D53', '#aebdb4':'#6F6870',
+              '#b9c8c0':'#554D53'
+          }
+          changed = False
+          for p in files:
+              text = p.read_text(encoding='utf-8')
+              old = text
+              for a,b in replacements.items():
+                  text = text.replace(a,b).replace(a.upper(),b)
+              if text != old:
+                  p.write_text(text, encoding='utf-8')
+                  changed = True
+          if changed:
+              print('Cambios de color aplicados.')
+          else:
+              print('No quedaron colores antiguos por reemplazar.')
+      - name: Guardar cambios
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html perfil.html profile.html profile-menu-sync.js mobile-app.js reminders-hub.js reminders-menu.js notifications.js payments.js financial-helper.js chatbot.js editory-finan-style.css
+          if git diff --cached --quiet; then
+            echo 'Sin cambios.'
+          else
+            git commit -m 'Etapa 1: unificar colores blanco y vino en todo el proyecto'
+            git push
+          fi
