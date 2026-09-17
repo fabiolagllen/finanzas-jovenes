@@ -100,7 +100,9 @@ async function openOption(action){
     if(editor)editor.style.display='block';
     if(action==='important'){
       const title=document.getElementById('fjReminderTitle');
+      const type=document.getElementById('fjReminderType');
       if(title)title.placeholder='Ej. Cumpleaños de mamá';
+      if(type)type.value='importante';
     }
     editor?.scrollIntoView({behavior:'smooth',block:'start'});
   }
