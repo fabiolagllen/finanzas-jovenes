@@ -1,17 +1,39 @@
-/* Finanzas Jóvenes — menú principal del apartado de recordatorios */
+/* Finanzas Jóvenes — único controlador del apartado Recordatorios */
 (function(){
 'use strict';
 if(window.__fjRemindersHubBooted)return;
 window.__fjRemindersHubBooted=true;
 
 function section(){return document.getElementById('pagos')}
+
+function removeLegacyPanels(){
+  const sec=section();
+  if(!sec)return;
+  const tools=sec.closest('.tools');
+  if(!tools)return;
+
+  tools.querySelectorAll('.panel').forEach(panel=>{
+    if(panel===sec)return;
+    const title=panel.querySelector('h3')?.textContent?.trim().toLowerCase()||'';
+    if(title.includes('registro de gastos')||title.includes('consejo del día')||title.includes('consejo del dia')){
+      panel.remove();
+    }
+  });
+
+  const herramientas=document.getElementById('herramientas');
+  if(herramientas){
+    sec.classList.add('fj-reminders-section');
+    herramientas.insertAdjacentElement('afterend',sec);
+  }
+}
+
 function loadModule(){
   return new Promise(resolve=>{
     if(window.__fjRemindersBooted){resolve();return}
     const old=document.querySelector('script[data-fj-reminders-module]');
     if(old){old.addEventListener('load',resolve,{once:true});setTimeout(resolve,700);return}
     const s=document.createElement('script');
-    s.src='./reminders-menu.js?v=7';
+    s.src='./reminders-menu.js?v=8&force='+Date.now();
     s.dataset.fjRemindersModule='true';
     s.onload=resolve;s.onerror=resolve;
     document.body.appendChild(s);
@@ -21,7 +43,7 @@ function styles(){
   if(document.getElementById('fjRemindersHubStyles'))return;
   const s=document.createElement('style');s.id='fjRemindersHubStyles';
   s.textContent=`
-  #pagos.fj-reminders-hub{scroll-margin-top:25px;padding-top:55px}
+  #pagos.fj-reminders-section{max-width:1180px;margin:auto;padding:55px 24px 72px;scroll-margin-top:25px}
   .fj-hub{padding:30px;border:1px solid #294034;border-radius:27px;background:linear-gradient(145deg,#0c1810,#07100a);box-shadow:0 18px 50px rgba(0,0,0,.25)}
   .fj-hub-head{display:flex;align-items:center;gap:16px;margin-bottom:24px}
   .fj-hub-icon{width:58px;height:58px;display:grid;place-items:center;border-radius:17px;background:#102b1a;border:1px solid #316343;font-size:27px}
@@ -35,14 +57,15 @@ function styles(){
   .fj-hub-option span{display:block;color:#82948a;font-size:.8rem;line-height:1.4}
   .fj-hub-workspace{margin-top:18px}
   .fj-hub-back{margin-bottom:10px;border:1px solid #294034;background:#07100a;color:#9eafa5;border-radius:10px;padding:9px 13px;cursor:pointer;font-weight:700}
-  @media(max-width:900px){#pagos.fj-reminders-hub{padding-top:42px}.fj-hub{padding:18px 12px;border-radius:19px}.fj-hub-head h2{font-size:1.4rem}.fj-hub-head p{font-size:.78rem}.fj-hub-options{grid-template-columns:1fr;gap:9px}.fj-hub-option{padding:15px}.fj-hub-option strong{font-size:.9rem}.fj-hub-option span{font-size:.74rem}}
+  @media(max-width:900px){#pagos.fj-reminders-section{padding:42px 12px 40px}.fj-hub{padding:18px 12px;border-radius:19px}.fj-hub-head h2{font-size:1.4rem}.fj-hub-head p{font-size:.78rem}.fj-hub-options{grid-template-columns:1fr;gap:9px}.fj-hub-option{padding:15px}.fj-hub-option strong{font-size:.9rem}.fj-hub-option span{font-size:.74rem}}
   `;
   document.head.appendChild(s);
 }
 function showHub(){
   const sec=section();if(!sec)return;
+  removeLegacyPanels();
   styles();
-  sec.classList.add('fj-reminders-hub');
+  sec.classList.add('fj-reminders-section');
   sec.innerHTML=`<div class="fj-hub"><div class="fj-hub-head"><div class="fj-hub-icon">🔔</div><div><h2>Centro de recordatorios</h2><p>¿Qué quieres hacer hoy?</p></div></div><div class="fj-hub-options"><button class="fj-hub-option" data-action="new"><span class="ico">💳</span><span><strong>Ingresar nuevo recordatorio de pago</strong><span>Agrega un pago, monto, fecha y hora para recibir un aviso.</span></span></button><button class="fj-hub-option" data-action="important"><span class="ico">📅</span><span><strong>Agregar una fecha importante</strong><span>Recuerda cumpleaños, trámites, metas u otras fechas.</span></span></button><button class="fj-hub-option" data-action="view"><span class="ico">📋</span><span><strong>Ver mis recordatorios</strong><span>Consulta tus recordatorios pendientes y completados.</span></span></button><button class="fj-hub-option" data-action="next"><span class="ico">⏰</span><span><strong>Revisar próximos recordatorios</strong><span>Mira las fechas que se acercan y organiza tus pendientes.</span></span></button></div></div><div id="fjReminderWorkspace" class="fj-hub-workspace"></div>`;
   sec.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>openOption(b.dataset.action)));
 }
