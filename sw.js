@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finanzas-jovenes-v13';
+const CACHE_NAME = 'finanzas-jovenes-v14';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,7 +11,8 @@ const APP_SHELL = [
   './notifications.js',
   './payments.js',
   './profile.js',
-  './reminders-menu.js'
+  './reminders-menu.js',
+  './reminders-hub.js'
 ];
 
 self.addEventListener('install', event => {
