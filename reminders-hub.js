@@ -33,7 +33,7 @@ function loadModule(){
     const old=document.querySelector('script[data-fj-reminders-module]');
     if(old){old.addEventListener('load',resolve,{once:true});setTimeout(resolve,700);return}
     const s=document.createElement('script');
-    s.src='./reminders-menu.js?v=9&force='+Date.now();
+    s.src='./reminders-menu.js?v=10&force='+Date.now();
     s.dataset.fjRemindersModule='true';
     s.onload=resolve;s.onerror=resolve;
     document.body.appendChild(s);
@@ -107,9 +107,17 @@ async function openOption(action){
     editor?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 }
-function start(){
+async function start(){
   const sec=section();if(!sec)return;
-  showHub();
+  removeLegacyPanels();
+  sec.classList.add('fj-reminders-section');
+  await loadModule();
+  const mounted=document.getElementById('fjRemindersMount');
+  if(mounted){
+    const app=mounted.closest('.fj-reminders-app');
+    if(app)sec.appendChild(app);
+    mounted.remove();
+  }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
